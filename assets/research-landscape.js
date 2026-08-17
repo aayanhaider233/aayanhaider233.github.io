@@ -1675,46 +1675,38 @@
 
 
     function hideHover(
-        item
+    item
+) {
+
+    item.group.classList.remove(
+        "is-hovered"
+    );
+
+
+    item.label.classList.remove(
+        "is-visible"
+    );
+
+
+    item.backdrop.classList.remove(
+        "is-visible"
+    );
+
+
+    if (
+        item.projectHint
     ) {
 
-        if (
-            item.dragging
-        ) {
-            return;
-        }
-
-
-        item.group.classList.remove(
-            "is-hovered"
-        );
-
-
-        item.label.classList.remove(
+        item.projectHint.classList.remove(
             "is-visible"
         );
-
-
-        item.backdrop.classList.remove(
-            "is-visible"
-        );
-
-
-        if (
-            item.projectHint
-        ) {
-
-            item.projectHint.classList.remove(
-                "is-visible"
-            );
-
-        }
-
-
-        clearObscured();
 
     }
 
+
+    clearObscured();
+
+}
 
     /* =========================================================
        DRAGGING
@@ -1873,10 +1865,6 @@
                     );
 
 
-                    showHover(
-                        item
-                    );
-
                 }
             );
 
@@ -1916,11 +1904,17 @@
 
 
                     if (
-                        movement > 4
+                        movement > 4 &&
+                        !item.dragging
                     ) {
 
                         item.dragging =
                             true;
+
+
+                        hideHover(
+                            item
+                        );
 
                     }
 
