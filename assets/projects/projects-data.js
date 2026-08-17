@@ -36,7 +36,7 @@ var PROJECTS = [
             "A real-time 3D aquarium simulation",
 
         fields: [
-            "Graphics Design",
+            "Computer Graphics",
             "Animation",
         ],
 

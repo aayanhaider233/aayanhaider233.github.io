@@ -1973,30 +1973,14 @@
 
                     } catch (error) {}
 
-
-                    /*
-                     * A project node only navigates if this
-                     * interaction was a click, not a drag.
-                     */
-
                     if (
                         !item.dragging &&
                         isWorkNode(item.data)
                     ) {
 
-                        var projectsTab =
-                            document.getElementById(
-                                "tab-projects"
-                            );
-
-                        if (projectsTab) {
-
-                            window.projectLandscapeFields =
-                                item.data.fields || [];
-
-                            projectsTab.click();
-
-                        }
+                        window.openProjectsPanel(
+                            item.data.fields || []
+                        );
 
                     }
 

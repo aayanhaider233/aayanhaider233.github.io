@@ -1183,9 +1183,12 @@
 
 
   updateHeaderProgress();
+
 /* =========================================================
    PROJECTS
    ========================================================= */
+
+
 
 var projectsList =
     document.getElementById("projects-list");
@@ -1196,10 +1199,56 @@ var projectFieldFilters =
 var projectToolFilters =
     document.getElementById("project-tool-filters");
 
-var activeFields = ["All"];
+var activeFields = [];
 
-var activeTools = ["All"];
+var activeTools = [];
 
+/*
+ * =========================================================
+ * OPEN PROJECTS PANEL
+ * =========================================================
+ */
+
+window.openProjectsPanel = function (fields) {
+
+    var projectsTab =
+        tabs.find(function (tab) {
+
+            return (
+                tab.getAttribute("aria-controls") ===
+                "panel-projects"
+            );
+
+        });
+
+
+    if (!projectsTab) {
+        return;
+    }
+
+
+    /*
+     * Apply project filters if fields were supplied.
+     */
+
+    if (
+        Array.isArray(fields) &&
+        typeof window.showProjectsWithFields ===
+        "function"
+    ) {
+
+        window.showProjectsWithFields(fields);
+
+    }
+
+
+    /*
+     * Switch to Projects.
+     */
+
+    activate(projectsTab);
+
+};
 
 function getUniqueProjectTags(key) {
 
@@ -1245,7 +1294,10 @@ function createProjectFilter(
             : activeTools;
 
 
-    if (activeFilters.includes(label)) {
+    if (
+        (label === "All" && activeFilters.length === 0) ||
+        activeFilters.includes(label)
+    ) {
         button.classList.add("is-active");
     }
 
@@ -1269,9 +1321,9 @@ function createProjectFilter(
             if (label === "All") {
 
                 if (type === "field") {
-                    activeFields = ["All"];
+                    activeFields = [];
                 } else {
-                    activeTools = ["All"];
+                    activeTools = [];
                 }
 
             }
@@ -1391,25 +1443,19 @@ function renderProjectFilters() {
 
 function projectMatchesFilters(project) {
 
-    var matchesField =
-        activeFields.includes("All") ||
-        activeFields.some(function (field) {
-
+    var matchesFields =
+        activeFields.length === 0 ||
+        activeFields.every(function (field) {
             return (project.fields || []).includes(field);
-
         });
 
-
-    var matchesTool =
-        activeTools.includes("All") ||
-        activeTools.some(function (tool) {
-
+    var matchesTools =
+        activeTools.length === 0 ||
+        activeTools.every(function (tool) {
             return (project.tools || []).includes(tool);
-
         });
 
-
-    return matchesField && matchesTool;
+    return matchesFields && matchesTools;
 }
 
 
@@ -1615,7 +1661,57 @@ if (tags.children.length) {
 
         });
 }
+/*
+ * =========================================================
+ * SHOW PROJECTS FROM RESEARCH LANDSCAPE
+ * =========================================================
+ *
+ * Called by research-landscape-engine.js when an
+ * "Intersecting Works" node is clicked.
+ *
+ * fields = the fields represented by that intersection.
+ *
+ * Example:
+ *
+ * showProjectsWithFields([
+ *     "Machine Learning",
+ *     "Causal ML",
+ *     "Bioinformatics"
+ * ]);
+ *
+ * This shows every project containing ALL three fields.
+ * =========================================================
+ */
 
+window.showProjectsWithFields = function (fields) {
+
+    /*
+     * Clear any existing filters.
+     */
+
+    activeFields =
+        Array.isArray(fields)
+            ? fields.slice()
+            : [];
+
+    activeTools = [];
+
+
+    /*
+     * Rebuild the filter UI so the selected
+     * fields are visually reflected.
+     */
+
+    renderProjectFilters();
+
+
+    /*
+     * Apply the filters.
+     */
+
+    renderProjects();
+
+};
 
 renderProjectFilters();
 

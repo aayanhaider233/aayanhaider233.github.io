@@ -114,28 +114,9 @@
 }
 
 
-/* ------------------------------------------------------------
-   UNPUBLISHED
-   Hollow diamond
-   ------------------------------------------------------------ */
-
-.research-node.unpublished .node-shape {
+.research-node.work .node-shape {
     fill: var(--paper);
     stroke: var(--olive);
-
-    stroke-width: 1.2;
-}
-
-
-/* ------------------------------------------------------------
-   PUBLISHED
-   Filled diamond
-   ------------------------------------------------------------ */
-
-.research-node.published .node-shape {
-    fill: var(--olive);
-    stroke: var(--olive);
-
     stroke-width: 1.2;
 }
 
@@ -325,19 +306,8 @@
 
 /* Hollow diamond */
 
-.legend-symbol.unpublished {
+.legend-symbol.work {
     background: transparent;
-
-    transform: rotate(45deg);
-}
-
-
-/* Filled diamond */
-
-.legend-symbol.published {
-    background: var(--olive);
-
-    border-color: var(--olive);
 
     transform: rotate(45deg);
 }
