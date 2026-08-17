@@ -1,168 +1,102 @@
 (function () {
   "use strict";
 
-  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  var tabs = Array.prototype.slice.call(
+    document.querySelectorAll(".tab")
+  );
+
   var panels = {};
+
   var FADE_MS = 150;
+
   var lastScrollY = window.scrollY;
+
   var scrollingUp = false;
 
+
+  /* =========================================================
+     TAB / PANEL SYSTEM
+     ========================================================= */
+
   tabs.forEach(function (tab) {
-    panels[tab.id] = document.getElementById(tab.getAttribute("aria-controls"));
+
+    panels[tab.id] =
+      document.getElementById(
+        tab.getAttribute("aria-controls")
+      );
+
   });
+
 
   function currentTab() {
-    return tabs.find(function (t) { return t.classList.contains("is-active"); });
+
+    return tabs.find(function (tab) {
+
+      return tab.classList.contains(
+        "is-active"
+      );
+
+    });
+
   }
+
 
   function setTabStates(tab) {
+
     tabs.forEach(function (t) {
-      var isActive = t === tab;
-      t.classList.toggle("is-active", isActive);
-      t.setAttribute("aria-selected", isActive ? "true" : "false");
-      t.tabIndex = isActive ? 0 : -1;
+
+      var isActive =
+        t === tab;
+
+      t.classList.toggle(
+        "is-active",
+        isActive
+      );
+
+      t.setAttribute(
+        "aria-selected",
+        isActive ? "true" : "false"
+      );
+
+      t.tabIndex =
+        isActive ? 0 : -1;
+
     });
+
   }
 
-  function activate(tab, opts) {
-    opts = opts || {};
-    if (!tab) return;
 
-    var oldTab = currentTab();
-    var oldPanel = oldTab ? panels[oldTab.id] : null;
-    var newPanel = panels[tab.id];
-    if (!newPanel) return;
-var switchingToProfile =
-    tab.getAttribute("aria-controls") === "panel-profile";
-
-var switchingFromProfile =
-    oldTab &&
-    oldTab.getAttribute("aria-controls") === "panel-profile";
-    if (oldPanel === newPanel) {
-      if (opts.focus) tab.focus();
-      return;
-    }
-
-    setTabStates(tab);
-
-    if (opts.updateHash !== false) {
-      history.replaceState(null, "", "#" + tab.getAttribute("aria-controls").replace("panel-", ""));
-    }
-
-    if (opts.focus) tab.focus();
-
-    if (!oldPanel || opts.instant) {
-      if (oldPanel) {
-        oldPanel.classList.remove("is-active");
-        oldPanel.hidden = true;
-      }
-      newPanel.hidden = false;
-      newPanel.classList.add("is-active");
-      return;
-    }
-
-    oldPanel.classList.add("is-fading");
-    window.setTimeout(function () {
-      oldPanel.classList.remove("is-active", "is-fading");
-      oldPanel.hidden = true;
-      newPanel.hidden = false;
-      newPanel.classList.add("is-fading", "is-active");
-      void newPanel.offsetWidth;
-      newPanel.classList.remove("is-fading");
-    }, FADE_MS);
-
-    if (opts.scroll !== false) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    /*
- * ---------------------------------------------------------
- * Header state follows the active panel.
- * ---------------------------------------------------------
- */
-
-if (switchingToProfile) {
-
-    /*
-     * Returning to Profile:
-     * reset the header completely.
-     */
-    resetProfileHeaderState();
-
-} else {
-
-    /*
-     * Any other panel:
-     * keep the header permanently compact.
-     */
-    setNonProfileHeaderState();
-}
-  }
-
-  tabs.forEach(function (tab, index) {
-    tab.addEventListener("click", function () { activate(tab); });
-    tab.addEventListener("keydown", function (event) {
-      var newIndex = null;
-      if (event.key === "ArrowRight") newIndex = (index + 1) % tabs.length;
-      else if (event.key === "ArrowLeft") newIndex = (index - 1 + tabs.length) % tabs.length;
-      else if (event.key === "Home") newIndex = 0;
-      else if (event.key === "End") newIndex = tabs.length - 1;
-      if (newIndex !== null) {
-        event.preventDefault();
-        activate(tabs[newIndex], { focus: true });
-      }
-    });
-  });
-
-  // Any internal link with data-tab uses the same tab-switching system.
-  document.querySelectorAll("[data-tab]").forEach(function (link) {
-    link.addEventListener("click", function (event) {
-      event.preventDefault();
-      activate(document.getElementById(link.getAttribute("data-tab")));
-    });
-  });
-
-  var initial = tabs[0];
-  var hash = window.location.hash.replace("#", "");
-  if (hash) {
-    var matched = tabs.find(function (t) {
-      return t.getAttribute("aria-controls") === "panel-" + hash;
-    });
-    if (matched) initial = matched;
-  }
-  activate(initial, { updateHash: false, instant: true, scroll: false });
   /* =========================================================
-     HEADER NAVIGATION TRANSITION
+     HEADER REFERENCES
      ========================================================= */
 
   var siteHeader =
-      document.querySelector(".site-header");
+    document.querySelector(".site-header");
 
   var nav =
-      document.querySelector(".nav");
+    document.querySelector(".nav");
 
   var heroTitle =
-      document.getElementById("hero-title");
-    
-  var profilePanel =
-    document.getElementById("panel-profile");
+    document.getElementById("hero-title");
+
 
   function isProfileActive() {
 
     var activeTab =
-        currentTab();
+      currentTab();
 
-    return activeTab &&
-        activeTab.getAttribute("aria-controls") === "panel-profile";
-}
-  /*
-   * ---------------------------------------------------------
-   * State
-   * ---------------------------------------------------------
-   */
+    return (
+      activeTab &&
+      activeTab.getAttribute("aria-controls") ===
+        "panel-profile"
+    );
 
-  var lastScrollY = window.scrollY;
+  }
 
-  var scrollingUp = false;
+
+  /* =========================================================
+     HEADER STATE
+     ========================================================= */
 
   var navCentered = false;
 
@@ -174,674 +108,1139 @@ if (switchingToProfile) {
 
 
   /*
-   * ---------------------------------------------------------
-   * Navigation position
-   * ---------------------------------------------------------
+   * --header-progress
    *
-   * 0 = original right-side position
-   * 1 = centred position
-   *
-   * While moving DOWN, this follows page position.
-   *
-   * While moving UP, the nav is NOT controlled by page
-   * position. It is released to CSS once the large title
-   * is completely visible.
-   * ---------------------------------------------------------
+   * 0 = normal Profile position
+   * 1 = compact / title-visible position
    */
 
   function setNavProgress(progress) {
 
-      nav.style.setProperty(
-          "--header-progress",
-          progress
-      );
+    if (!nav) {
+      return;
+    }
+
+    nav.style.setProperty(
+      "--header-progress",
+      progress
+    );
+
   }
 
 
-  /*
-   * ---------------------------------------------------------
-   * Small header title
-   * ---------------------------------------------------------
-   */
+  /* =========================================================
+     SMALL HEADER TITLE
+     ========================================================= */
 
   function showHeaderTitle() {
 
-      if (titleVisible) {
-          return;
-      }
+    if (titleVisible) {
+      return;
+    }
 
-      titleVisible = true;
+    titleVisible = true;
 
-      nav.classList.add(
-          "title-visible"
-      );
+    nav.classList.add(
+      "title-visible"
+    );
+
   }
 
 
   function hideHeaderTitle() {
 
-      if (!titleVisible) {
-          return;
-      }
+    if (!titleVisible) {
+      return;
+    }
 
-      titleVisible = false;
+    titleVisible = false;
 
-      nav.classList.remove(
-          "title-visible"
-      );
+    nav.classList.remove(
+      "title-visible"
+    );
+
   }
 
 
-  /*
-   * ---------------------------------------------------------
-   * Return navigation to original position
-   * ---------------------------------------------------------
-   *
-   * This is deliberately NOT tied to scroll position.
-   *
-   * Once called, CSS transitions the nav from its current
-   * centred position back to the original right-side
-   * position.
-   * ---------------------------------------------------------
-   */
+  /* =========================================================
+     NON-PROFILE HEADER STATE
+     =========================================================
+     
+     Every panel other than Profile permanently uses the
+     compact header.
 
-  function returnNavToRight() {
-
-    if (!navCentered) {
-        return;
-    }
-
-    window.clearTimeout(navReturnTimer);
-    navReturnTimer = null;
-
-    navCentered = false;
-
-    nav.classList.remove(
-        "is-following-scroll"
-    );
-
-    setNavProgress(0);
-
-    siteHeader.classList.remove(
-        "is-compact"
-    );
-}
-
-
-  /*
-   * ---------------------------------------------------------
-   * Main update
-   * ---------------------------------------------------------
-   */
+     This state is NOT affected by scroll position.
+     ========================================================= */
 
   function setNonProfileHeaderState() {
 
     /*
-     * Cancel any pending transitions.
+     * Cancel any Profile transitions.
      */
 
-    window.clearTimeout(titleFadeTimer);
-    window.clearTimeout(navReturnTimer);
+    window.clearTimeout(
+      titleFadeTimer
+    );
+
+    window.clearTimeout(
+      navReturnTimer
+    );
 
     titleFadeTimer = null;
+
     navReturnTimer = null;
 
 
     /*
-     * Header is permanently compact on other panels.
+     * Mark the nav as already centred.
      */
 
     navCentered = true;
 
 
     /*
-     * Remove scroll control.
+     * Remove scroll-controlled movement.
      */
 
     nav.classList.remove(
-        "is-following-scroll"
+      "is-following-scroll"
     );
 
 
     /*
-     * Open the space between the two nav pairs.
+     * Keep the space open for the title.
      */
 
     setNavProgress(1);
 
 
     /*
-     * Show the small title immediately.
+     * Always show the small title.
      */
 
     showHeaderTitle();
 
 
+    /*
+     * Keep the compact header appearance.
+     */
+
     siteHeader.classList.add(
-        "is-compact"
+      "is-compact"
     );
-}
-
-  function updateHeaderProgress() {
-
-if (
-    !siteHeader ||
-    !nav ||
-    !heroTitle
-) {
-    return;
-}
-
-
-/*
- * Header transitions only happen on Profile.
- */
-
-if (!isProfileActive()) {
-
-    setNonProfileHeaderState();
-
-    return;
-}
-
-
-      /*
-       * -----------------------------------------------------
-       * Determine scroll direction
-       * -----------------------------------------------------
-       */
-
-      var currentScrollY =
-          window.scrollY;
-
-      scrollingUp =
-          currentScrollY < lastScrollY;
-
-      lastScrollY =
-          currentScrollY;
-
-
-      /*
-       * -----------------------------------------------------
-       * Position of large Aayan Haider title
-       * -----------------------------------------------------
-       */
-
-      var titleRect =
-          heroTitle.getBoundingClientRect();
-
-      var titleHeight =
-          titleRect.height;
-
-
-      /*
-       * =====================================================
-       * BORDER
-       * =====================================================
-       *
-       * Border remains independent of the nav animation.
-       */
-
-      var borderFadeStart = 80;
-
-      var borderFadeEnd = 0;
-
-      var borderProgress =
-          (
-              borderFadeStart -
-              titleRect.bottom
-          ) /
-          (
-              borderFadeStart -
-              borderFadeEnd
-          );
-
-      borderProgress =
-          Math.max(
-              0,
-              Math.min(
-                  1,
-                  borderProgress
-              )
-          );
-
-      siteHeader.style.setProperty(
-          "--header-border-opacity",
-          borderProgress * 0.25
-      );
-
-
-      /*
-       * =====================================================
-       * SCROLLING UP
-       * =====================================================
-       */
-
-      if (scrollingUp) {
-
-    /*
-     * -------------------------------------------------
-     * 1. LARGE TITLE IS 1/4 VISIBLE
-     * -------------------------------------------------
-     *
-     * Start fading the small header title out.
-     */
-
-    var quarterVisiblePoint =
-        titleHeight * 0.75;
-
-
-    if (
-        titleRect.bottom >= quarterVisiblePoint &&
-        titleRect.bottom < titleHeight
-    ) {
-
-        /*
-         * Cancel any pending fade-in.
-         */
-        window.clearTimeout(
-            titleFadeTimer
-        );
-
-        titleFadeTimer = null;
-
-
-        /*
-         * Start the small title fade-out.
-         */
-        hideHeaderTitle();
-    }
 
 
     /*
-     * -------------------------------------------------
-     * 2. LARGE TITLE IS COMPLETELY IN VIEW
-     * -------------------------------------------------
-     *
-     * The nav is allowed to return only after the
-     * small title has completely disappeared.
+     * Non-profile panels should not inherit a
+     * Profile-specific border opacity.
      */
 
-    if (
-        navCentered &&
-        titleRect.top >= 0
-    ) {
+    siteHeader.style.setProperty(
+      "--header-border-opacity",
+      "0.25"
+    );
 
-        /*
-         * Cancel any previous return timer.
-         */
-        window.clearTimeout(
-            navReturnTimer
-        );
+  }
 
 
-        /*
-         * If the title is still fading, wait for its
-         * CSS transition to finish.
-         *
-         * .site-name uses:
-         *     transition: opacity .4s ease;
-         */
-        if (titleVisible) {
+  /* =========================================================
+     PROFILE HEADER RESET
+     =========================================================
+     
+     This is called immediately when switching TO Profile.
 
-            hideHeaderTitle();
+     It deliberately does NOT depend on the current scroll
+     position.
+     ========================================================= */
 
-            navReturnTimer =
-                window.setTimeout(
-                    function () {
-
-                        if (navCentered) {
-                            returnNavToRight();
-                        }
-
-                        navReturnTimer = null;
-
-                    },
-                    400
-                );
-
-        } else {
-
-            /*
-             * Title is already completely gone.
-             * Return the nav immediately.
-             */
-            returnNavToRight();
-
-        }
-
-        return;
-    }
-
-function resetProfileHeaderState() {
+  function resetProfileHeaderState() {
 
     /*
-     * Cancel everything that may have been running
-     * while another panel was active.
+     * Cancel everything from the previous panel.
      */
 
-    window.clearTimeout(titleFadeTimer);
-    window.clearTimeout(navReturnTimer);
+    window.clearTimeout(
+      titleFadeTimer
+    );
+
+    window.clearTimeout(
+      navReturnTimer
+    );
 
     titleFadeTimer = null;
+
     navReturnTimer = null;
 
 
     /*
-     * Profile starts with the nav closed.
+     * Profile starts with the nav in its normal position.
      */
 
     navCentered = false;
 
 
     /*
-     * Hide the small title.
+     * Remove the compact title immediately.
      */
 
     hideHeaderTitle();
 
 
     /*
-     * Return the pairs to their normal spacing.
+     * Close the space between the two nav pairs.
      */
 
     nav.classList.remove(
-        "is-following-scroll"
+      "is-following-scroll"
     );
 
     setNavProgress(0);
 
 
+    /*
+     * Return the header to its normal Profile state.
+     */
+
     siteHeader.classList.remove(
-        "is-compact"
+      "is-compact"
     );
 
 
     /*
-     * Now allow the normal profile scroll logic
-     * to take over.
+     * Reset border before Profile's scroll logic
+     * takes over.
      */
 
-    updateHeaderProgress();
-}
+    siteHeader.style.setProperty(
+      "--header-border-opacity",
+      "0"
+    );
+
+
     /*
-     * -------------------------------------------------
-     * 3. NAV IS ALREADY CENTRED
-     * -------------------------------------------------
-     *
-     * Keep it stationary while the large title is
-     * coming back into view.
+     * Synchronise the scroll reference so switching
+     * panels does not create a false scroll direction.
      */
 
-    if (navCentered) {
-        return;
+    lastScrollY =
+      window.scrollY;
+
+  }
+
+
+  /* =========================================================
+     RETURN NAV TO NORMAL POSITION
+     ========================================================= */
+
+  function returnNavToRight() {
+
+    if (!navCentered) {
+      return;
+    }
+
+
+    window.clearTimeout(
+      navReturnTimer
+    );
+
+    navReturnTimer = null;
+
+
+    navCentered = false;
+
+
+    /*
+     * Re-enable the CSS transition.
+     */
+
+    nav.classList.remove(
+      "is-following-scroll"
+    );
+
+
+    /*
+     * CSS smoothly moves the nav from 1 → 0.
+     */
+
+    setNavProgress(0);
+
+
+    siteHeader.classList.remove(
+      "is-compact"
+    );
+
+  }
+
+
+  /* =========================================================
+     PROFILE SCROLL LOGIC
+     ========================================================= */
+
+  function updateHeaderProgress() {
+
+    if (
+      !siteHeader ||
+      !nav ||
+      !heroTitle
+    ) {
+      return;
     }
 
 
     /*
-     * -------------------------------------------------
-     * 4. SCROLLING UP BEFORE NAV IS CENTRED
-     * -------------------------------------------------
-     *
-     * Continue following the page normally.
+     * -------------------------------------------------------
+     * HEADER TRANSITIONS ONLY EXIST ON PROFILE
+     * -------------------------------------------------------
      */
 
-    nav.classList.add(
-        "is-following-scroll"
+    if (!isProfileActive()) {
+
+      setNonProfileHeaderState();
+
+      return;
+
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * SCROLL DIRECTION
+     * -------------------------------------------------------
+     */
+
+    var currentScrollY =
+      window.scrollY;
+
+    scrollingUp =
+      currentScrollY < lastScrollY;
+
+    lastScrollY =
+      currentScrollY;
+
+
+    /*
+     * -------------------------------------------------------
+     * LARGE TITLE POSITION
+     * -------------------------------------------------------
+     */
+
+    var titleRect =
+      heroTitle.getBoundingClientRect();
+
+    var titleHeight =
+      titleRect.height;
+
+
+    /* =======================================================
+       BORDER
+       =======================================================
+
+       The border is independent of nav positioning.
+
+       It is based purely on the large title's position.
+       ======================================================= */
+
+    var borderFadeStart = 80;
+
+    var borderFadeEnd = 0;
+
+    var borderProgress =
+      (
+        borderFadeStart -
+        titleRect.bottom
+      ) /
+      (
+        borderFadeStart -
+        borderFadeEnd
+      );
+
+
+    borderProgress =
+      Math.max(
+        0,
+        Math.min(
+          1,
+          borderProgress
+        )
+      );
+
+
+    siteHeader.style.setProperty(
+      "--header-border-opacity",
+      borderProgress * 0.25
     );
 
 
-    var reverseTransitionStart = 180;
+    /* =======================================================
+       SCROLLING UP
+       ======================================================= */
 
-    var reverseTransitionEnd = 0;
+    if (scrollingUp) {
 
 
-    var reverseProgress =
+      /*
+       * -----------------------------------------------------
+       * LARGE TITLE IS 1/4 VISIBLE
+       * -----------------------------------------------------
+       *
+       * Begin fading out the small header title.
+       */
+
+      var quarterVisiblePoint =
+        titleHeight * 0.75;
+
+
+      if (
+        titleRect.bottom >=
+          quarterVisiblePoint &&
+        titleRect.bottom <
+          titleHeight
+      ) {
+
+        window.clearTimeout(
+          titleFadeTimer
+        );
+
+        titleFadeTimer = null;
+
+
+        hideHeaderTitle();
+
+      }
+
+
+      /*
+       * -----------------------------------------------------
+       * LARGE TITLE IS COMPLETELY IN VIEW
+       * -----------------------------------------------------
+       *
+       * Only now allow the nav to return.
+       */
+
+      if (
+        navCentered &&
+        titleRect.top >= 0
+      ) {
+
+        window.clearTimeout(
+          navReturnTimer
+        );
+
+
+        /*
+         * If the title is still visible, begin its fade
+         * and wait for the CSS opacity transition.
+         */
+
+        if (titleVisible) {
+
+          hideHeaderTitle();
+
+
+          navReturnTimer =
+            window.setTimeout(
+              function () {
+
+                if (
+                  navCentered &&
+                  isProfileActive()
+                ) {
+
+                  returnNavToRight();
+
+                }
+
+                navReturnTimer = null;
+
+              },
+              250
+            );
+
+
+        } else {
+
+          /*
+           * Title has already disappeared.
+           * Return immediately.
+           */
+
+          returnNavToRight();
+
+        }
+
+
+        return;
+
+      }
+
+
+      /*
+       * -----------------------------------------------------
+       * NAV ALREADY CENTRED
+       * -----------------------------------------------------
+       *
+       * Keep it stationary while the large title comes back.
+       */
+
+      if (navCentered) {
+
+        return;
+
+      }
+
+
+      /*
+       * -----------------------------------------------------
+       * SCROLLING UP BEFORE NAV IS CENTRED
+       * -----------------------------------------------------
+       *
+       * Reverse the normal page-following movement.
+       */
+
+      nav.classList.add(
+        "is-following-scroll"
+      );
+
+
+      var reverseTransitionStart = 180;
+
+      var reverseTransitionEnd = 0;
+
+
+      var reverseProgress =
         (
-            reverseTransitionStart -
-            titleRect.bottom
+          reverseTransitionStart -
+          titleRect.bottom
         ) /
         (
-            reverseTransitionStart -
-            reverseTransitionEnd
+          reverseTransitionStart -
+          reverseTransitionEnd
         );
 
 
-    reverseProgress =
+      reverseProgress =
         Math.max(
-            0,
-            Math.min(
-                1,
-                reverseProgress
-            )
+          0,
+          Math.min(
+            1,
+            reverseProgress
+          )
         );
 
 
-    var reverseEased =
+      var reverseEased =
         reverseProgress *
         reverseProgress *
         (3 - 2 * reverseProgress);
 
 
-    setNavProgress(
+      setNavProgress(
         reverseEased
-    );
+      );
 
 
-    return;
-}
+      return;
+
+    }
+
+
+    /* =======================================================
+       SCROLLING DOWN
+       ======================================================= */
+
+    if (
+      !scrollingUp &&
+      !navCentered
+    ) {
 
 
       /*
-       * =====================================================
-       * SCROLLING DOWN
-       * =====================================================
-       *
-       * The nav follows the page until it reaches the centre.
-       * =====================================================
+       * Cancel any pending return.
+       */
+
+      window.clearTimeout(
+        navReturnTimer
+      );
+
+      navReturnTimer = null;
+
+
+      /*
+       * Nav follows the page.
+       */
+
+      nav.classList.add(
+        "is-following-scroll"
+      );
+
+
+      var transitionStart = 180;
+
+      var transitionEnd = 0;
+
+
+      var progress =
+        (
+          transitionStart -
+          titleRect.bottom
+        ) /
+        (
+          transitionStart -
+          transitionEnd
+        );
+
+
+      progress =
+        Math.max(
+          0,
+          Math.min(
+            1,
+            progress
+          )
+        );
+
+
+      /*
+       * Smoothstep easing.
+       */
+
+      var eased =
+        progress *
+        progress *
+        (3 - 2 * progress);
+
+
+      setNavProgress(
+        eased
+      );
+
+
+      /*
+       * -----------------------------------------------------
+       * NAV HAS REACHED CENTRE
+       * -----------------------------------------------------
        */
 
       if (
-          !scrollingUp &&
-          !navCentered
+        progress >= 0.98
       ) {
 
-          /*
-           * Cancel any reverse-return timer.
-           */
-
-          window.clearTimeout(
-              navReturnTimer
-          );
-
-          navReturnTimer = null;
+        setNavProgress(1);
 
 
-          nav.classList.add(
-              "is-following-scroll"
-          );
+        /*
+         * Stop scroll-controlled movement.
+         */
+
+        nav.classList.remove(
+          "is-following-scroll"
+        );
 
 
-          var transitionStart = 180;
-
-          var transitionEnd = 0;
+        navCentered = true;
 
 
-          var progress =
-              (
-                  transitionStart -
-                  titleRect.bottom
-              ) /
-              (
-                  transitionStart -
-                  transitionEnd
-              );
+        siteHeader.classList.add(
+          "is-compact"
+        );
 
 
-          progress =
-              Math.max(
-                  0,
-                  Math.min(
-                      1,
-                      progress
-                  )
-              );
+        /*
+         * ---------------------------------------------------
+         * SHOW SMALL TITLE AFTER NAV SETTLES
+         * ---------------------------------------------------
+         */
 
+        if (
+          !titleVisible &&
+          !titleFadeTimer
+        ) {
 
-          /*
-           * Smoothstep easing.
-           */
+          titleFadeTimer =
+            window.setTimeout(
+              function () {
 
-          var eased =
-              progress *
-              progress *
-              (3 - 2 * progress);
+                if (
+                  navCentered &&
+                  isProfileActive()
+                ) {
 
+                  showHeaderTitle();
 
-          setNavProgress(
-              eased
-          );
+                }
 
+                titleFadeTimer = null;
 
-          /*
-           * -------------------------------------------------
-           * NAV HAS REACHED CENTRE
-           * -------------------------------------------------
-           */
+              },
+              250
+            );
 
-          if (
-              progress >= 0.98
-          ) {
+        }
 
-              setNavProgress(1);
-
-
-              /*
-               * Release scroll control.
-               */
-              nav.classList.remove(
-                  "is-following-scroll"
-              );
-
-
-              navCentered = true;
-
-
-              siteHeader.classList.add(
-                  "is-compact"
-              );
-
-
-              /*
-               * ------------------------------------------------
-               * Small title appears AFTER nav has settled.
-               * ------------------------------------------------
-               */
-
-              if (
-                  !titleVisible &&
-                  !titleFadeTimer
-              ) {
-
-                  titleFadeTimer =
-                      window.setTimeout(
-                          function () {
-
-                              if (
-                                  navCentered &&
-                                  !scrollingUp
-                              ) {
-                                  showHeaderTitle();
-                              }
-
-                              titleFadeTimer = null;
-
-                          },
-                          250
-                      );
-              }
-          }
       }
+
+    }
+
   }
 
 
-  /*
-   * ---------------------------------------------------------
-   * Scroll
-   * ---------------------------------------------------------
-   */
+  /* =========================================================
+     TAB ACTIVATION
+     ========================================================= */
 
-  window.addEventListener(
-      "scroll",
-      updateHeaderProgress,
-      {
-          passive: true
+  function activate(tab, opts) {
+
+    opts = opts || {};
+
+    if (!tab) {
+      return;
+    }
+
+
+    var oldTab =
+      currentTab();
+
+    var oldPanel =
+      oldTab
+        ? panels[oldTab.id]
+        : null;
+
+    var newPanel =
+      panels[tab.id];
+
+
+    if (!newPanel) {
+      return;
+    }
+
+
+    if (oldPanel === newPanel) {
+
+      if (opts.focus) {
+        tab.focus();
       }
+
+      return;
+
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * CHANGE ACTIVE TAB FIRST
+     * -------------------------------------------------------
+     */
+
+    setTabStates(tab);
+
+
+    /*
+     * -------------------------------------------------------
+     * UPDATE HEADER IMMEDIATELY
+     * -------------------------------------------------------
+     *
+     * This MUST happen before the early return below.
+     *
+     * Otherwise switching panels can leave the nav in the
+     * previous Profile state until the next scroll event.
+     * -------------------------------------------------------
+     */
+
+    if (
+      tab.getAttribute("aria-controls") ===
+      "panel-profile"
+    ) {
+
+      resetProfileHeaderState();
+
+    } else {
+
+      setNonProfileHeaderState();
+
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * UPDATE HASH
+     * -------------------------------------------------------
+     */
+
+    if (
+      opts.updateHash !== false
+    ) {
+
+      history.replaceState(
+        null,
+        "",
+        "#" +
+          tab
+            .getAttribute("aria-controls")
+            .replace("panel-", "")
+      );
+
+    }
+
+
+    if (opts.focus) {
+      tab.focus();
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * INSTANT / INITIAL PANEL
+     * -------------------------------------------------------
+     */
+
+    if (
+      !oldPanel ||
+      opts.instant
+    ) {
+
+      if (oldPanel) {
+
+        oldPanel.classList.remove(
+          "is-active"
+        );
+
+        oldPanel.hidden = true;
+
+      }
+
+
+      newPanel.hidden = false;
+
+      newPanel.classList.add(
+        "is-active"
+      );
+
+
+      return;
+
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * PANEL FADE
+     * -------------------------------------------------------
+     */
+
+    oldPanel.classList.add(
+      "is-fading"
+    );
+
+
+    window.setTimeout(
+      function () {
+
+        oldPanel.classList.remove(
+          "is-active",
+          "is-fading"
+        );
+
+        oldPanel.hidden = true;
+
+
+        newPanel.hidden = false;
+
+        newPanel.classList.add(
+          "is-fading",
+          "is-active"
+        );
+
+
+        void newPanel.offsetWidth;
+
+
+        newPanel.classList.remove(
+          "is-fading"
+        );
+
+      },
+      FADE_MS
+    );
+
+
+    /*
+     * -------------------------------------------------------
+     * SCROLL TO TOP
+     * -------------------------------------------------------
+     */
+
+    if (
+      opts.scroll !== false
+    ) {
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    }
+
+  }
+
+
+  /* =========================================================
+     TAB CLICK / KEYBOARD
+     ========================================================= */
+
+  tabs.forEach(
+    function (tab, index) {
+
+      tab.addEventListener(
+        "click",
+        function () {
+
+          activate(tab);
+
+        }
+      );
+
+
+      tab.addEventListener(
+        "keydown",
+        function (event) {
+
+          var newIndex = null;
+
+
+          if (
+            event.key === "ArrowRight"
+          ) {
+
+            newIndex =
+              (index + 1) %
+              tabs.length;
+
+          }
+
+          else if (
+            event.key === "ArrowLeft"
+          ) {
+
+            newIndex =
+              (
+                index -
+                1 +
+                tabs.length
+              ) %
+              tabs.length;
+
+          }
+
+          else if (
+            event.key === "Home"
+          ) {
+
+            newIndex = 0;
+
+          }
+
+          else if (
+            event.key === "End"
+          ) {
+
+            newIndex =
+              tabs.length - 1;
+
+          }
+
+
+          if (
+            newIndex !== null
+          ) {
+
+            event.preventDefault();
+
+            activate(
+              tabs[newIndex],
+              {
+                focus: true
+              }
+            );
+
+          }
+
+        }
+      );
+
+    }
   );
 
 
-  /*
-   * ---------------------------------------------------------
-   * Resize
-   * ---------------------------------------------------------
-   */
+  /* =========================================================
+     INTERNAL DATA-TAB LINKS
+     ========================================================= */
 
-  window.addEventListener(
-      "resize",
-      updateHeaderProgress
+  document
+    .querySelectorAll("[data-tab]")
+    .forEach(
+      function (link) {
+
+        link.addEventListener(
+          "click",
+          function (event) {
+
+            event.preventDefault();
+
+
+            activate(
+              document.getElementById(
+                link.getAttribute(
+                  "data-tab"
+                )
+              )
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  /* =========================================================
+     INITIAL TAB
+     ========================================================= */
+
+  var initial =
+    tabs[0];
+
+  var hash =
+    window.location.hash.replace(
+      "#",
+      ""
+    );
+
+
+  if (hash) {
+
+    var matched =
+      tabs.find(
+        function (tab) {
+
+          return (
+            tab.getAttribute(
+              "aria-controls"
+            ) ===
+            "panel-" + hash
+          );
+
+        }
+      );
+
+
+    if (matched) {
+      initial = matched;
+    }
+
+  }
+
+
+  activate(
+    initial,
+    {
+      updateHash: false,
+      instant: true,
+      scroll: false
+    }
   );
 
 
-  /*
-   * ---------------------------------------------------------
-   * Initial state
-   * ---------------------------------------------------------
-   */
+  /* =========================================================
+     HEADER INITIALISATION
+     ========================================================= */
 
-  setNavProgress(0);
+  setNavProgress(
+    isProfileActive()
+      ? 0
+      : 1
+  );
 
-  nav.classList.add(
+
+  if (isProfileActive()) {
+
+    hideHeaderTitle();
+
+    navCentered = false;
+
+    nav.classList.add(
       "is-following-scroll"
-  );
+    );
+
+    siteHeader.classList.remove(
+      "is-compact"
+    );
+
+  } else {
+
+    setNonProfileHeaderState();
+
+  }
+
 
   updateHeaderProgress();
 
 
   /* =========================================================
-    AUTO-HIDING SCROLLBAR
-    ========================================================= */
+     AUTO-HIDING SCROLLBAR
+     ========================================================= */
 
   var scrollHideTimeout;
 
+
   window.addEventListener(
-      "scroll",
-      function () {
+    "scroll",
+    function () {
 
-          document.documentElement.classList.add(
+      document.documentElement.classList.add(
+        "is-scrolling"
+      );
+
+
+      window.clearTimeout(
+        scrollHideTimeout
+      );
+
+
+      scrollHideTimeout =
+        window.setTimeout(
+          function () {
+
+            document.documentElement.classList.remove(
               "is-scrolling"
-          );
+            );
 
+          },
+          650
+        );
 
-          window.clearTimeout(
-              scrollHideTimeout
-          );
-
-
-          scrollHideTimeout =
-              window.setTimeout(
-                  function () {
-
-                      document.documentElement.classList.remove(
-                          "is-scrolling"
-                      );
-
-                  },
-                  650
-              );
-
-      },
-      {
-          passive: true
-      }
+    },
+    {
+      passive: true
+    }
   );
+
+
+  /* =========================================================
+     SCROLL / RESIZE
+     ========================================================= */
+
+  window.addEventListener(
+    "scroll",
+    updateHeaderProgress,
+    {
+      passive: true
+    }
+  );
+
+
+  window.addEventListener(
+    "resize",
+    updateHeaderProgress
+  );
+
 })();
