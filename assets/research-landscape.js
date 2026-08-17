@@ -7,7 +7,11 @@
        INITIALISATION
        ========================================================= */
 
-    var container = document.getElementById("research-landscape");
+    var container =
+        document.getElementById(
+            "research-landscape"
+        );
+
 
     if (
         !container ||
@@ -17,15 +21,24 @@
     }
 
 
-    var NS = "http://www.w3.org/2000/svg";
+    var NS =
+        "http://www.w3.org/2000/svg";
 
-    var nodes = RESEARCH_LANDSCAPE.nodes;
-    var edges = RESEARCH_LANDSCAPE.edges;
+
+    var nodes =
+        RESEARCH_LANDSCAPE.nodes;
+
+    var edges =
+        RESEARCH_LANDSCAPE.edges;
+
 
     var nodeMap = {};
 
+
     nodes.forEach(function (node) {
+
         nodeMap[node.id] = node;
+
     });
 
 
@@ -34,27 +47,69 @@
        ========================================================= */
 
     var SVG_WIDTH = 1000;
+
     var SVG_HEIGHT = 600;
 
-    var NODE_RADIUS = 6;
+
+    /*
+     * Smaller nodes.
+     */
+
+    var NODE_RADIUS = 8;
+
+    /*
+     * Diamonds are true squares.
+     */
+
+    var DIAMOND_SIZE = 16;
 
 
-    var svg = document.createElementNS(NS, "svg");
+    var svg =
+        document.createElementNS(
+            NS,
+            "svg"
+        );
+
 
     svg.setAttribute(
         "viewBox",
-        "0 0 " + SVG_WIDTH + " " + SVG_HEIGHT
+        "0 0 " +
+        SVG_WIDTH +
+        " " +
+        SVG_HEIGHT
     );
+
+
+    /*
+     * Preserve the SVG coordinate ratio so circles
+     * remain circles.
+     */
 
     svg.setAttribute(
         "preserveAspectRatio",
-        "none"
+        "xMidYMid meet"
     );
 
 
-    var edgeLayer = document.createElementNS(NS, "g");
-    var nodeLayer = document.createElementNS(NS, "g");
-    var labelLayer = document.createElementNS(NS, "g");
+    var edgeLayer =
+        document.createElementNS(
+            NS,
+            "g"
+        );
+
+
+    var nodeLayer =
+        document.createElementNS(
+            NS,
+            "g"
+        );
+
+
+    var labelLayer =
+        document.createElementNS(
+            NS,
+            "g"
+        );
 
 
     edgeLayer.setAttribute(
@@ -62,10 +117,12 @@
         "research-edge-layer"
     );
 
+
     nodeLayer.setAttribute(
         "class",
         "research-node-layer"
     );
+
 
     labelLayer.setAttribute(
         "class",
@@ -73,32 +130,56 @@
     );
 
 
-    svg.appendChild(edgeLayer);
-    svg.appendChild(nodeLayer);
-    svg.appendChild(labelLayer);
+    svg.appendChild(
+        edgeLayer
+    );
 
-    container.appendChild(svg);
+    svg.appendChild(
+        nodeLayer
+    );
+
+    svg.appendChild(
+        labelLayer
+    );
+
+
+    container.appendChild(
+        svg
+    );
 
 
     /* =========================================================
        HELPERS
        ========================================================= */
 
-    function createElement(type, attributes) {
+    function createElement(
+        type,
+        attributes
+    ) {
 
         var element =
-            document.createElementNS(NS, type);
-
-        Object.keys(attributes).forEach(function (key) {
-
-            element.setAttribute(
-                key,
-                attributes[key]
+            document.createElementNS(
+                NS,
+                type
             );
 
-        });
+
+        Object.keys(
+            attributes
+        ).forEach(
+            function (key) {
+
+                element.setAttribute(
+                    key,
+                    attributes[key]
+                );
+
+            }
+        );
+
 
         return element;
+
     }
 
 
@@ -117,11 +198,13 @@
         return {
 
             x:
-                node.x / 100 *
+                node.x /
+                100 *
                 SVG_WIDTH,
 
             y:
-                node.y / 100 *
+                node.y /
+                100 *
                 SVG_HEIGHT
 
         };
@@ -129,12 +212,228 @@
     }
 
 
-    function clamp(value, min, max) {
+    function clamp(
+        value,
+        min,
+        max
+    ) {
 
         return Math.max(
             min,
-            Math.min(max, value)
+            Math.min(
+                max,
+                value
+            )
         );
+
+    }
+
+
+    /* =========================================================
+       EDGE GEOMETRY
+       ========================================================= */
+
+    /*
+     * Return the distance from the centre of a node to its
+     * boundary along the direction of an incoming/outgoing edge.
+     *
+     * Circle:
+     *      constant radius
+     *
+     * Diamond:
+     *      intersection with the rotated-square boundary
+     */
+
+    function nodeBoundaryDistance(
+        node,
+        dx,
+        dy
+    ) {
+
+        var length =
+            Math.hypot(
+                dx,
+                dy
+            );
+
+
+        if (
+            length === 0
+        ) {
+            return 0;
+        }
+
+
+        var ux =
+            dx / length;
+
+        var uy =
+            dy / length;
+
+
+        /*
+         * Circles.
+         */
+
+        if (
+            node.type === "exploring" ||
+            node.type === "emerging"
+        ) {
+
+            return NODE_RADIUS;
+
+        }
+
+
+        /*
+         * A square rotated 45 degrees.
+         *
+         * For a diamond with half-side h,
+         * the boundary along direction (ux, uy)
+         * is:
+         *
+         * h / (|ux| + |uy|)
+         *
+         * This guarantees a geometrically correct
+         * square-derived diamond.
+         */
+
+        var halfSide =
+            DIAMOND_SIZE / 2;
+
+
+        return (
+            halfSide /
+            (
+                Math.abs(ux) +
+                Math.abs(uy)
+            )
+        );
+
+    }
+
+
+    /*
+     * Shorten an edge at both ends so it terminates exactly
+     * at the boundary of each node.
+     */
+
+    function getClippedEdge(
+        source,
+        target
+    ) {
+
+        var sourcePosition =
+            getPosition(
+                source
+            );
+
+
+        var targetPosition =
+            getPosition(
+                target
+            );
+
+
+        var dx =
+            targetPosition.x -
+            sourcePosition.x;
+
+
+        var dy =
+            targetPosition.y -
+            sourcePosition.y;
+
+
+        var length =
+            Math.hypot(
+                dx,
+                dy
+            );
+
+
+        if (
+            length === 0
+        ) {
+
+            return {
+
+                x1:
+                    sourcePosition.x,
+
+                y1:
+                    sourcePosition.y,
+
+                x2:
+                    targetPosition.x,
+
+                y2:
+                    targetPosition.y
+
+            };
+
+        }
+
+
+        var ux =
+            dx / length;
+
+        var uy =
+            dy / length;
+
+
+        var sourceOffset =
+            nodeBoundaryDistance(
+                source,
+                dx,
+                dy
+            );
+
+
+        var targetOffset =
+            nodeBoundaryDistance(
+                target,
+                -dx,
+                -dy
+            );
+
+
+        /*
+         * Tiny extra inset avoids antialiasing touching
+         * the node outline.
+         */
+
+        var inset = 0.8;
+
+
+        sourceOffset += inset;
+
+        targetOffset += inset;
+
+
+        return {
+
+            x1:
+                sourcePosition.x +
+                ux *
+                sourceOffset,
+
+            y1:
+                sourcePosition.y +
+                uy *
+                sourceOffset,
+
+            x2:
+                targetPosition.x -
+                ux *
+                targetOffset,
+
+            y2:
+                targetPosition.y -
+                uy *
+                targetOffset
+
+        };
 
     }
 
@@ -148,22 +447,28 @@
 
     edges.forEach(function (edge) {
 
-        var line = createElement(
-            "line",
-            {
-                class: "research-edge"
-            }
+        var line =
+            createElement(
+                "line",
+                {
+                    class:
+                        "research-edge"
+                }
+            );
+
+
+        edgeLayer.appendChild(
+            line
         );
-
-
-        edgeLayer.appendChild(line);
 
 
         edgeElements.push({
 
-            data: edge,
+            data:
+                edge,
 
-            element: line
+            element:
+                line
 
         });
 
@@ -179,20 +484,24 @@
 
     nodes.forEach(function (node) {
 
-        var group = createElement(
-            "g",
-            {
-                class:
-                    "research-node " +
-                    node.type
-            }
-        );
+        var group =
+            createElement(
+                "g",
+                {
+                    class:
+                        "research-node " +
+                        node.type
+                }
+            );
 
 
-        group.dataset.nodeId = node.id;
+        group.dataset.nodeId =
+            node.id;
 
 
-        if (isProject(node)) {
+        if (
+            isProject(node)
+        ) {
 
             group.classList.add(
                 "is-project"
@@ -208,96 +517,117 @@
         var shape;
 
 
-        if (isProject(node)) {
+        if (
+            isProject(node)
+        ) {
 
-            shape = createElement(
-                "rect",
-                {
-                    class: "node-shape",
+            /*
+             * A genuine square rotated 45 degrees.
+             */
 
-                    x: -NODE_RADIUS,
+            shape =
+                createElement(
+                    "rect",
+                    {
+                        class:
+                            "node-shape",
 
-                    y: -NODE_RADIUS,
+                        x:
+                            -DIAMOND_SIZE / 2,
 
-                    width:
-                        NODE_RADIUS * 2,
+                        y:
+                            -DIAMOND_SIZE / 2,
 
-                    height:
-                        NODE_RADIUS * 2,
+                        width:
+                            DIAMOND_SIZE,
 
-                    transform: "rotate(45)"
-                }
-            );
+                        height:
+                            DIAMOND_SIZE,
+
+                        transform:
+                            "rotate(45)"
+                    }
+                );
 
         } else {
 
-            shape = createElement(
-                "circle",
-                {
-                    class: "node-shape",
+            shape =
+                createElement(
+                    "circle",
+                    {
+                        class:
+                            "node-shape",
 
-                    cx: 0,
+                        cx: 0,
 
-                    cy: 0,
+                        cy: 0,
 
-                    r: NODE_RADIUS
-                }
-            );
+                        r:
+                            NODE_RADIUS
+                    }
+                );
 
         }
 
 
         /* -----------------------------------------------------
-           Larger hover shape
+           Hover shape
            ----------------------------------------------------- */
 
         var hoverShape;
 
 
-        if (isProject(node)) {
+        if (
+            isProject(node)
+        ) {
 
-            hoverShape = createElement(
-                "rect",
-                {
-                    class:
-                        "node-hover-shape",
+            hoverShape =
+                createElement(
+                    "rect",
+                    {
+                        class:
+                            "node-hover-shape",
 
-                    x: -NODE_RADIUS,
+                        x:
+                            -DIAMOND_SIZE / 2,
 
-                    y: -NODE_RADIUS,
+                        y:
+                            -DIAMOND_SIZE / 2,
 
-                    width:
-                        NODE_RADIUS * 2,
+                        width:
+                            DIAMOND_SIZE,
 
-                    height:
-                        NODE_RADIUS * 2,
+                        height:
+                            DIAMOND_SIZE,
 
-                    transform: "rotate(45)"
-                }
-            );
+                        transform:
+                            "rotate(45)"
+                    }
+                );
 
         } else {
 
-            hoverShape = createElement(
-                "circle",
-                {
-                    class:
-                        "node-hover-shape",
+            hoverShape =
+                createElement(
+                    "circle",
+                    {
+                        class:
+                            "node-hover-shape",
 
-                    cx: 0,
+                        cx: 0,
 
-                    cy: 0,
+                        cy: 0,
 
-                    r: NODE_RADIUS
-                }
-            );
+                        r:
+                            NODE_RADIUS
+                    }
+                );
 
         }
 
 
         /*
-         * Hover shape must be underneath
-         * the actual node.
+         * Highlight goes underneath the real node.
          */
 
         group.appendChild(
@@ -315,48 +645,53 @@
 
 
         /* -----------------------------------------------------
-           Label group
+           Label
            ----------------------------------------------------- */
 
-        var labelGroup = createElement(
-            "g",
-            {
-                class:
-                    "research-label-group"
-            }
-        );
+        var labelGroup =
+            createElement(
+                "g",
+                {
+                    class:
+                        "research-label-group"
+                }
+            );
 
 
-        var backdrop = createElement(
-            "rect",
-            {
-                class:
-                    "research-label-backdrop",
+        var backdrop =
+            createElement(
+                "rect",
+                {
+                    class:
+                        "research-label-backdrop",
 
-                rx: 4,
+                    rx: 3,
 
-                ry: 4
-            }
-        );
+                    ry: 3
+                }
+            );
 
 
-        var label = createElement(
-            "text",
-            {
-                class:
-                    "research-label",
+        var label =
+            createElement(
+                "text",
+                {
+                    class:
+                        "research-label",
 
-                "text-anchor":
-                    "middle"
-            }
-        );
+                    "text-anchor":
+                        "middle"
+                }
+            );
 
 
         /*
-         * Interest labels contain the interest name.
+         * Interest names are hidden until hover.
          */
 
-        if (!isProject(node)) {
+        if (
+            !isProject(node)
+        ) {
 
             label.textContent =
                 node.name;
@@ -373,31 +708,34 @@
         );
 
 
-        /*
-         * Project nodes do NOT display their
-         * name on hover.
-         */
+        /* -----------------------------------------------------
+           Project instruction
+           ----------------------------------------------------- */
 
-        var projectHint = null;
+        var projectHint =
+            null;
 
 
-        if (isProject(node)) {
+        if (
+            isProject(node)
+        ) {
 
-            projectHint = createElement(
-                "text",
-                {
-                    class:
-                        "research-label " +
-                        "research-project-hint",
+            projectHint =
+                createElement(
+                    "text",
+                    {
+                        class:
+                            "research-label " +
+                            "research-project-hint",
 
-                    "text-anchor":
-                        "middle"
-                }
-            );
+                        "text-anchor":
+                            "middle"
+                    }
+                );
 
 
             projectHint.textContent =
-                "click to explore related projects";
+                "Click to explore related projects";
 
 
             labelGroup.appendChild(
@@ -414,25 +752,35 @@
 
         nodeElements.push({
 
-            data: node,
+            data:
+                node,
 
-            group: group,
+            group:
+                group,
 
-            shape: shape,
+            shape:
+                shape,
 
-            hoverShape: hoverShape,
+            hoverShape:
+                hoverShape,
 
-            labelGroup: labelGroup,
+            labelGroup:
+                labelGroup,
 
-            backdrop: backdrop,
+            backdrop:
+                backdrop,
 
-            label: label,
+            label:
+                label,
 
-            projectHint: projectHint,
+            projectHint:
+                projectHint,
 
-            dragging: false,
+            dragging:
+                false,
 
-            pointerDownPosition: null
+            pointerDownPosition:
+                null
 
         });
 
@@ -440,63 +788,117 @@
 
 
     /* =========================================================
+       EDGE POSITIONING
+       ========================================================= */
+
+    function updateEdges() {
+
+        edgeElements.forEach(
+            function (item) {
+
+                var source =
+                    nodeMap[
+                        item.data.source
+                    ];
+
+
+                var target =
+                    nodeMap[
+                        item.data.target
+                    ];
+
+
+                var clipped =
+                    getClippedEdge(
+                        source,
+                        target
+                    );
+
+
+                item.element.setAttribute(
+                    "x1",
+                    clipped.x1
+                );
+
+                item.element.setAttribute(
+                    "y1",
+                    clipped.y1
+                );
+
+                item.element.setAttribute(
+                    "x2",
+                    clipped.x2
+                );
+
+                item.element.setAttribute(
+                    "y2",
+                    clipped.y2
+                );
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
        LABEL POSITIONING
        ========================================================= */
 
-    function positionLabel(item) {
-
-        var node =
-            item.data;
+    function positionLabel(
+        item
+    ) {
 
         var position =
-            getPosition(node);
+            getPosition(
+                item.data
+            );
 
 
         /*
-         * Labels try several nearby positions.
-         *
-         * The first candidate is directly above
-         * the node, which gives the cleanest
-         * appearance in most cases.
+         * Keep labels close to their nodes.
          */
 
         var candidates = [
 
             {
-                x: position.x,
-                y: position.y - 22
+                x:
+                    position.x,
+
+                y:
+                    position.y - 25
             },
 
             {
-                x: position.x + 58,
-                y: position.y
+                x:
+                    position.x + 45,
+
+                y:
+                    position.y
             },
 
             {
-                x: position.x - 58,
-                y: position.y
+                x:
+                    position.x - 45,
+
+                y:
+                    position.y
             },
 
             {
-                x: position.x,
-                y: position.y + 30
-            },
+                x:
+                    position.x,
 
-            {
-                x: position.x + 48,
-                y: position.y - 25
-            },
-
-            {
-                x: position.x - 48,
-                y: position.y - 25
+                y:
+                    position.y + 23
             }
 
         ];
 
 
-        var bestCandidate =
+        var best =
             candidates[0];
+
 
         var bestScore =
             Infinity;
@@ -505,19 +907,20 @@
         candidates.forEach(
             function (candidate) {
 
-                var score = 0;
+                var score =
+                    0;
 
 
                 /*
-                 * Penalise nearby nodes.
+                 * Avoid nearby nodes.
                  */
 
                 nodes.forEach(
-                    function (otherNode) {
+                    function (other) {
 
                         if (
-                            otherNode.id ===
-                            node.id
+                            other.id ===
+                            item.data.id
                         ) {
                             return;
                         }
@@ -525,83 +928,27 @@
 
                         var otherPosition =
                             getPosition(
-                                otherNode
+                                other
                             );
 
 
-                        var dx =
-                            candidate.x -
-                            otherPosition.x;
-
-                        var dy =
-                            candidate.y -
-                            otherPosition.y;
-
-
                         var distance =
-                            Math.sqrt(
-                                dx * dx +
-                                dy * dy
+                            Math.hypot(
+                                candidate.x -
+                                otherPosition.x,
+
+                                candidate.y -
+                                otherPosition.y
                             );
 
 
                         if (
-                            distance < 80
+                            distance < 55
                         ) {
 
                             score +=
-                                80 -
+                                55 -
                                 distance;
-
-                        }
-
-                    }
-                );
-
-
-                /*
-                 * Penalise edges crossing
-                 * the candidate.
-                 */
-
-                edges.forEach(
-                    function (edge) {
-
-                        var source =
-                            getPosition(
-                                nodeMap[
-                                    edge.source
-                                ]
-                            );
-
-                        var target =
-                            getPosition(
-                                nodeMap[
-                                    edge.target
-                                ]
-                            );
-
-
-                        var distance =
-                            pointToSegmentDistance(
-                                candidate.x,
-                                candidate.y,
-
-                                source.x,
-                                source.y,
-
-                                target.x,
-                                target.y
-                            );
-
-
-                        if (
-                            distance < 30
-                        ) {
-
-                            score +=
-                                (30 - distance) *
-                                0.5;
 
                         }
 
@@ -617,7 +964,7 @@
                     bestScore =
                         score;
 
-                    bestCandidate =
+                    best =
                         candidate;
 
                 }
@@ -628,19 +975,15 @@
 
         item.label.setAttribute(
             "x",
-            bestCandidate.x
+            best.x
         );
+
 
         item.label.setAttribute(
             "y",
-            bestCandidate.y
+            best.y
         );
 
-
-        /*
-         * Project hint sits directly underneath
-         * the project instruction.
-         */
 
         if (
             item.projectHint
@@ -648,29 +991,26 @@
 
             item.projectHint.setAttribute(
                 "x",
-                bestCandidate.x
+                best.x
             );
+
 
             item.projectHint.setAttribute(
                 "y",
-                bestCandidate.y + 17
+                best.y 
             );
 
         }
 
 
         /*
-         * Label background.
+         * Build the backdrop after the label has
+         * its final position.
          */
 
-        var box =
+        var labelBox =
             item.label.getBBox();
 
-
-        /*
-         * For project nodes, the background
-         * needs to cover both lines.
-         */
 
         if (
             item.projectHint
@@ -682,26 +1022,30 @@
 
             var left =
                 Math.min(
-                    box.x,
+                    labelBox.x,
                     hintBox.x
                 );
 
             var top =
                 Math.min(
-                    box.y,
+                    labelBox.y,
                     hintBox.y
                 );
 
             var right =
                 Math.max(
-                    box.x + box.width,
+                    labelBox.x +
+                    labelBox.width,
+
                     hintBox.x +
                     hintBox.width
                 );
 
             var bottom =
                 Math.max(
-                    box.y + box.height,
+                    labelBox.y +
+                    labelBox.height,
+
                     hintBox.y +
                     hintBox.height
                 );
@@ -709,44 +1053,48 @@
 
             item.backdrop.setAttribute(
                 "x",
-                left - 7
+                left - 5
             );
 
             item.backdrop.setAttribute(
                 "y",
-                top - 5
+                top - 3
             );
 
             item.backdrop.setAttribute(
                 "width",
-                right - left + 14
+                right -
+                left +
+                10
             );
 
             item.backdrop.setAttribute(
                 "height",
-                bottom - top + 10
+                bottom -
+                top +
+                6
             );
 
         } else {
 
             item.backdrop.setAttribute(
                 "x",
-                box.x - 7
+                labelBox.x - 5
             );
 
             item.backdrop.setAttribute(
                 "y",
-                box.y - 5
+                labelBox.y - 3
             );
 
             item.backdrop.setAttribute(
                 "width",
-                box.width + 14
+                labelBox.width + 10
             );
 
             item.backdrop.setAttribute(
                 "height",
-                box.height + 10
+                labelBox.height + 6
             );
 
         }
@@ -755,86 +1103,33 @@
 
 
     /* =========================================================
-       POSITION EVERYTHING
+       POINT / LINE GEOMETRY
        ========================================================= */
 
-    function updatePositions() {
+    function pointInsideBox(
+        x,
+        y,
+        box
+    ) {
 
-        nodeElements.forEach(
-            function (item) {
+        return (
 
-                var position =
-                    getPosition(
-                        item.data
-                    );
+            x >= box.x &&
 
+            x <=
+                box.x +
+                box.width &&
 
-                item.group.setAttribute(
-                    "transform",
+            y >= box.y &&
 
-                    "translate(" +
-                    position.x +
-                    " " +
-                    position.y +
-                    ")"
-                );
+            y <=
+                box.y +
+                box.height
 
-
-                positionLabel(
-                    item
-                );
-
-            }
-        );
-
-
-        edgeElements.forEach(
-            function (item) {
-
-                var source =
-                    getPosition(
-                        nodeMap[
-                            item.data.source
-                        ]
-                    );
-
-                var target =
-                    getPosition(
-                        nodeMap[
-                            item.data.target
-                        ]
-                    );
-
-
-                item.element.setAttribute(
-                    "x1",
-                    source.x
-                );
-
-                item.element.setAttribute(
-                    "y1",
-                    source.y
-                );
-
-                item.element.setAttribute(
-                    "x2",
-                    target.x
-                );
-
-                item.element.setAttribute(
-                    "y2",
-                    target.y
-                );
-
-            }
         );
 
     }
 
-
-    /* =========================================================
-       GEOMETRY
-       ========================================================= */
 
     function pointToSegmentDistance(
         px,
@@ -887,343 +1182,18 @@
 
 
         var x =
-            x1 + t * dx;
+            x1 +
+            t * dx;
+
 
         var y =
-            y1 + t * dy;
+            y1 +
+            t * dy;
 
 
         return Math.hypot(
             px - x,
             py - y
-        );
-
-    }
-
-
-    /* =========================================================
-       DIM ELEMENTS BEHIND LABEL
-       ========================================================= */
-
-    function clearObscured() {
-
-        nodeElements.forEach(
-            function (item) {
-
-                item.group.classList.remove(
-                    "is-obscured"
-                );
-
-            }
-        );
-
-
-        edgeElements.forEach(
-            function (item) {
-
-                item.element.classList.remove(
-                    "is-obscured"
-                );
-
-            }
-        );
-
-    }
-
-
-    function dimBehindLabel(item) {
-
-        clearObscured();
-
-
-        var box =
-            item.label.getBBox();
-
-
-        var padding = 6;
-
-
-        var labelBox = {
-
-            x:
-                box.x - padding,
-
-            y:
-                box.y - padding,
-
-            width:
-                box.width +
-                padding * 2,
-
-            height:
-                box.height +
-                padding * 2
-
-        };
-
-
-        /*
-         * Project instruction is also part
-         * of the label area.
-         */
-
-        if (
-            item.projectHint
-        ) {
-
-            var hintBox =
-                item.projectHint.getBBox();
-
-
-            var left =
-                Math.min(
-                    labelBox.x,
-                    hintBox.x -
-                    padding
-                );
-
-            var top =
-                Math.min(
-                    labelBox.y,
-                    hintBox.y -
-                    padding
-                );
-
-            var right =
-                Math.max(
-                    labelBox.x +
-                    labelBox.width,
-
-                    hintBox.x +
-                    hintBox.width +
-                    padding
-                );
-
-            var bottom =
-                Math.max(
-                    labelBox.y +
-                    labelBox.height,
-
-                    hintBox.y +
-                    hintBox.height +
-                    padding
-                );
-
-
-            labelBox = {
-
-                x: left,
-
-                y: top,
-
-                width:
-                    right - left,
-
-                height:
-                    bottom - top
-
-            };
-
-        }
-
-
-        /*
-         * Nodes under label.
-         */
-
-        nodeElements.forEach(
-            function (other) {
-
-                if (
-                    other === item
-                ) {
-                    return;
-                }
-
-
-                var position =
-                    getPosition(
-                        other.data
-                    );
-
-
-                if (
-                    pointInsideBox(
-                        position.x,
-                        position.y,
-                        labelBox
-                    )
-                ) {
-
-                    other.group.classList.add(
-                        "is-obscured"
-                    );
-
-                }
-
-            }
-        );
-
-
-        /*
-         * Edges under label.
-         */
-
-        edgeElements.forEach(
-            function (edge) {
-
-                var source =
-                    getPosition(
-                        nodeMap[
-                            edge.data.source
-                        ]
-                    );
-
-                var target =
-                    getPosition(
-                        nodeMap[
-                            edge.data.target
-                        ]
-                    );
-
-
-                if (
-                    lineIntersectsBox(
-                        source.x,
-                        source.y,
-
-                        target.x,
-                        target.y,
-
-                        labelBox
-                    )
-                ) {
-
-                    edge.element.classList.add(
-                        "is-obscured"
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    function pointInsideBox(
-        x,
-        y,
-        box
-    ) {
-
-        return (
-            x >= box.x &&
-            x <= box.x + box.width &&
-            y >= box.y &&
-            y <= box.y + box.height
-        );
-
-    }
-
-
-    function lineIntersectsBox(
-        x1,
-        y1,
-        x2,
-        y2,
-        box
-    ) {
-
-        if (
-            pointInsideBox(
-                x1,
-                y1,
-                box
-            ) ||
-            pointInsideBox(
-                x2,
-                y2,
-                box
-            )
-        ) {
-
-            return true;
-
-        }
-
-
-        var left =
-            box.x;
-
-        var right =
-            box.x +
-            box.width;
-
-        var top =
-            box.y;
-
-        var bottom =
-            box.y +
-            box.height;
-
-
-        return (
-
-            segmentsIntersect(
-                x1,
-                y1,
-                x2,
-                y2,
-
-                left,
-                top,
-                right,
-                top
-            )
-
-            ||
-
-            segmentsIntersect(
-                x1,
-                y1,
-                x2,
-                y2,
-
-                right,
-                top,
-                right,
-                bottom
-            )
-
-            ||
-
-            segmentsIntersect(
-                x1,
-                y1,
-                x2,
-                y2,
-
-                right,
-                bottom,
-                left,
-                bottom
-            )
-
-            ||
-
-            segmentsIntersect(
-                x1,
-                y1,
-                x2,
-                y2,
-
-                left,
-                bottom,
-                left,
-                top
-            )
-
         );
 
     }
@@ -1272,6 +1242,7 @@
                 y1
             );
 
+
         var d2 =
             direction(
                 x3,
@@ -1282,6 +1253,7 @@
                 y2
             );
 
+
         var d3 =
             direction(
                 x1,
@@ -1291,6 +1263,7 @@
                 x3,
                 y3
             );
+
 
         var d4 =
             direction(
@@ -1322,45 +1295,272 @@
     }
 
 
+    function lineIntersectsBox(
+        x1,
+        y1,
+        x2,
+        y2,
+        box
+    ) {
+
+        if (
+            pointInsideBox(
+                x1,
+                y1,
+                box
+            ) ||
+
+            pointInsideBox(
+                x2,
+                y2,
+                box
+            )
+        ) {
+
+            return true;
+
+        }
+
+
+        var left =
+            box.x;
+
+        var right =
+            box.x +
+            box.width;
+
+        var top =
+            box.y;
+
+        var bottom =
+            box.y +
+            box.height;
+
+
+        return (
+
+            segmentsIntersect(
+                x1,
+                y1,
+                x2,
+                y2,
+                left,
+                top,
+                right,
+                top
+            )
+
+            ||
+
+            segmentsIntersect(
+                x1,
+                y1,
+                x2,
+                y2,
+                right,
+                top,
+                right,
+                bottom
+            )
+
+            ||
+
+            segmentsIntersect(
+                x1,
+                y1,
+                x2,
+                y2,
+                right,
+                bottom,
+                left,
+                bottom
+            )
+
+            ||
+
+            segmentsIntersect(
+                x1,
+                y1,
+                x2,
+                y2,
+                left,
+                bottom,
+                left,
+                top
+            )
+
+        );
+
+    }
+
+
     /* =========================================================
-       HOVER
+       DIMMING
        ========================================================= */
 
-    function showHover(item) {
+    function clearObscured() {
+
+        nodeElements.forEach(
+            function (item) {
+
+                item.group.classList.remove(
+                    "is-obscured"
+                );
+
+            }
+        );
+
+
+        edgeElements.forEach(
+            function (item) {
+
+                item.element.classList.remove(
+                    "is-obscured"
+                );
+
+            }
+        );
+
+    }
+
+
+    function dimBehindLabel(
+        item
+    ) {
+
+        clearObscured();
+
+
+        var box =
+            item.label.getBBox();
+
+
+        var padding = 0;
+
+
+        var labelBox = {
+
+            x:
+                box.x -
+                padding,
+
+            y:
+                box.y -
+                padding,
+
+            width:
+                box.width +
+                padding * 2,
+
+            height:
+                box.height +
+                padding * 2
+
+        };
+
 
         /*
-         * Hide any other active label first.
+         * Include project instruction.
+         */
+
+        if (
+            item.projectHint
+        ) {
+
+            var hintBox =
+                item.projectHint.getBBox();
+
+
+            var left =
+                Math.min(
+                    labelBox.x,
+                    hintBox.x -
+                    padding
+                );
+
+
+            var top =
+                Math.min(
+                    labelBox.y,
+                    hintBox.y -
+                    padding
+                );
+
+
+            var right =
+                Math.max(
+                    labelBox.x +
+                    labelBox.width,
+
+                    hintBox.x +
+                    hintBox.width +
+                    padding
+                );
+
+
+            var bottom =
+                Math.max(
+                    labelBox.y +
+                    labelBox.height,
+
+                    hintBox.y +
+                    hintBox.height +
+                    padding
+                );
+
+
+            labelBox = {
+
+                x:
+                    left,
+
+                y:
+                    top,
+
+                width:
+                    right -
+                    left,
+
+                height:
+                    bottom -
+                    top
+
+            };
+
+        }
+
+
+        /*
+         * Dim nodes beneath label.
          */
 
         nodeElements.forEach(
             function (other) {
 
                 if (
-                    other !== item
+                    other === item
+                ) {
+                    return;
+                }
+
+
+                var position =
+                    getPosition(
+                        other.data
+                    );
+
+
+                if (
+                    pointInsideBox(
+                        position.x,
+                        position.y,
+                        labelBox
+                    )
                 ) {
 
-                    other.group.classList.remove(
-                        "is-hovered"
+                    other.group.classList.add(
+                        "is-obscured"
                     );
-
-                    other.label.classList.remove(
-                        "is-visible"
-                    );
-
-                    other.backdrop.classList.remove(
-                        "is-visible"
-                    );
-
-
-                    if (
-                        other.projectHint
-                    ) {
-
-                        other.projectHint.classList.remove(
-                            "is-visible"
-                        );
-
-                    }
 
                 }
 
@@ -1368,23 +1568,122 @@
         );
 
 
-        item.group.classList.add(
-            "is-hovered"
+        /*
+         * Dim edges beneath label.
+         */
+
+        edgeElements.forEach(
+            function (edge) {
+
+                var source =
+                    getPosition(
+                        nodeMap[
+                            edge.data.source
+                        ]
+                    );
+
+
+                var target =
+                    getPosition(
+                        nodeMap[
+                            edge.data.target
+                        ]
+                    );
+
+
+                if (
+                    lineIntersectsBox(
+                        source.x,
+                        source.y,
+
+                        target.x,
+                        target.y,
+
+                        labelBox
+                    )
+                ) {
+
+                    edge.element.classList.add(
+                        "is-obscured"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+    /* =========================================================
+       HOVER
+       ========================================================= */
+
+    function showHover(
+        item
+    ) {
+
+        /*
+         * Only one node's label is visible at a time.
+         */
+
+        nodeElements.forEach(
+            function (other) {
+
+                if (
+                    other === item
+                ) {
+                    return;
+                }
+
+
+                other.group.classList.remove(
+                    "is-hovered"
+                );
+
+
+                other.label.classList.remove(
+                    "is-visible"
+                );
+
+
+                other.backdrop.classList.remove(
+                    "is-visible"
+                );
+
+
+                if (
+                    other.projectHint
+                ) {
+
+                    other.projectHint.classList.remove(
+                        "is-visible"
+                    );
+
+                }
+
+            }
         );
 
 
         /*
-         * Interest name.
+         * Activate this node.
          */
+
+        item.group.classList.add(
+            "is-hovered"
+        );
+
 
         item.label.classList.add(
             "is-visible"
         );
 
 
-        /*
-         * Project instruction.
-         */
+        item.backdrop.classList.add(
+            "is-visible"
+        );
+
 
         if (
             item.projectHint
@@ -1397,11 +1696,6 @@
         }
 
 
-        item.backdrop.classList.add(
-            "is-visible"
-        );
-
-
         dimBehindLabel(
             item
         );
@@ -1409,11 +1703,9 @@
     }
 
 
-    function hideHover(item) {
-
-        /*
-         * Don't hide while dragging.
-         */
+    function hideHover(
+        item
+    ) {
 
         if (
             item.dragging
@@ -1457,7 +1749,8 @@
        DRAGGING
        ========================================================= */
 
-    var activeDrag = null;
+    var activeDrag =
+        null;
 
 
     function getPointerPosition(
@@ -1468,23 +1761,62 @@
             svg.getBoundingClientRect();
 
 
+        /*
+         * Because the SVG preserves its aspect ratio,
+         * account for the actual rendered SVG rectangle.
+         */
+
+        var scale =
+            Math.min(
+                rect.width /
+                    SVG_WIDTH,
+
+                rect.height /
+                    SVG_HEIGHT
+            );
+
+
+        var renderedWidth =
+            SVG_WIDTH *
+            scale;
+
+
+        var renderedHeight =
+            SVG_HEIGHT *
+            scale;
+
+
+        var offsetX =
+            (
+                rect.width -
+                renderedWidth
+            ) / 2;
+
+
+        var offsetY =
+            (
+                rect.height -
+                renderedHeight
+            ) / 2;
+
+
         return {
 
             x:
                 (
                     event.clientX -
-                    rect.left
+                    rect.left -
+                    offsetX
                 ) /
-                rect.width *
-                SVG_WIDTH,
+                scale,
 
             y:
                 (
                     event.clientY -
-                    rect.top
+                    rect.top -
+                    offsetY
                 ) /
-                rect.height *
-                SVG_HEIGHT
+                scale
 
         };
 
@@ -1549,16 +1881,19 @@
                     activeDrag =
                         item;
 
+
                     item.dragging =
                         false;
 
 
                     item.pointerDownPosition = {
+
                         x:
                             event.clientX,
 
                         y:
                             event.clientY
+
                     };
 
 
@@ -1587,7 +1922,9 @@
                         activeDrag !==
                         item
                     ) {
+
                         return;
+
                     }
 
 
@@ -1597,18 +1934,15 @@
 
                     var movement =
                         Math.hypot(
+
                             event.clientX -
                             start.x,
 
                             event.clientY -
                             start.y
+
                         );
 
-
-                    /*
-                     * Small movement is still a click.
-                     * Larger movement becomes dragging.
-                     */
 
                     if (
                         movement > 4
@@ -1623,7 +1957,9 @@
                     if (
                         !item.dragging
                     ) {
+
                         return;
+
                     }
 
 
@@ -1635,6 +1971,7 @@
 
                     item.data.x =
                         clamp(
+
                             pointer.x /
                             SVG_WIDTH *
                             100,
@@ -1642,11 +1979,13 @@
                             2,
 
                             98
+
                         );
 
 
                     item.data.y =
                         clamp(
+
                             pointer.y /
                             SVG_HEIGHT *
                             100,
@@ -1654,6 +1993,7 @@
                             4,
 
                             94
+
                         );
 
 
@@ -1680,7 +2020,9 @@
                         activeDrag !==
                         item
                     ) {
+
                         return;
+
                     }
 
 
@@ -1698,8 +2040,8 @@
 
 
                     /*
-                     * If it wasn't actually dragged,
-                     * handle project click.
+                     * A project node only navigates if this
+                     * interaction was a click, not a drag.
                      */
 
                     if (
@@ -1746,6 +2088,46 @@
 
         }
     );
+
+
+    /* =========================================================
+       UPDATE
+       ========================================================= */
+
+    function updatePositions() {
+
+        nodeElements.forEach(
+            function (item) {
+
+                var position =
+                    getPosition(
+                        item.data
+                    );
+
+
+                item.group.setAttribute(
+                    "transform",
+
+                    "translate(" +
+                    position.x +
+                    " " +
+                    position.y +
+                    ")"
+
+                );
+
+
+                positionLabel(
+                    item
+                );
+
+            }
+        );
+
+
+        updateEdges();
+
+    }
 
 
     /* =========================================================

@@ -5,13 +5,14 @@
  *
  * Node types:
  *
- * exploring   → filled circle
- * emerging    → hollow circle
- * unpublished → hollow diamond
- * published   → filled diamond
+ * exploring   = filled circle
+ * emerging    = hollow circle
+ * unpublished = hollow diamond
+ * published   = filled diamond
  *
- * x / y are initial positions as percentages of the graph.
- * Nodes remain draggable after the graph loads.
+ * x / y = initial position as percentages.
+ *
+ * Edit this file when adding/removing/repositioning nodes.
  * ============================================================
  */
 
@@ -19,9 +20,9 @@ const RESEARCH_LANDSCAPE = {
 
     nodes: [
 
-        // ----------------------------------------------------
-        // CURRENTLY EXPLORING
-        // ----------------------------------------------------
+        /* ----------------------------------------------------
+           CURRENTLY EXPLORING
+           ---------------------------------------------------- */
 
         {
             id: "causal-inference",
@@ -56,9 +57,9 @@ const RESEARCH_LANDSCAPE = {
         },
 
 
-        // ----------------------------------------------------
-        // EMERGING INTERESTS
-        // ----------------------------------------------------
+        /* ----------------------------------------------------
+           EMERGING INTERESTS
+           ---------------------------------------------------- */
 
         {
             id: "nlp",
@@ -101,9 +102,9 @@ const RESEARCH_LANDSCAPE = {
         },
 
 
-        // ----------------------------------------------------
-        // UNPUBLISHED WORK
-        // ----------------------------------------------------
+        /* ----------------------------------------------------
+           UNPUBLISHED WORK
+           ---------------------------------------------------- */
 
         {
             id: "thesis",
@@ -116,13 +117,13 @@ const RESEARCH_LANDSCAPE = {
     ],
 
 
-    // --------------------------------------------------------
-    // RELATIONSHIPS
-    // --------------------------------------------------------
+    /* --------------------------------------------------------
+       EDGES
+       -------------------------------------------------------- */
 
     edges: [
 
-        // Causal Inference + Machine Learning → Causal ML
+        /* Causal Inference + ML → Causal ML */
 
         {
             source: "causal-inference",
@@ -135,8 +136,7 @@ const RESEARCH_LANDSCAPE = {
         },
 
 
-        // Causal ML + Machine Learning + Bioinformatics
-        // → Thesis
+        /* Causal ML + ML + Bioinformatics → Thesis */
 
         {
             source: "causal-ml",
