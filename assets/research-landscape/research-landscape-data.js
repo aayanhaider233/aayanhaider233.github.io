@@ -23,6 +23,21 @@ const RESEARCH_LANDSCAPE = {
         /* ----------------------------------------------------
            CURRENTLY EXPLORING
            ---------------------------------------------------- */
+        {
+            id: "computer-graphics",
+            name: "Computer Graphics",
+            type: "exploring",
+            x: 20,
+            y: 45
+        },
+
+        {
+            id: "animation",
+            name: "Animation",
+            type: "exploring",
+            x: 15,
+            y: 38
+        },
 
         {
             id: "causal-inference",
@@ -112,7 +127,7 @@ const RESEARCH_LANDSCAPE = {
             type: "unpublished",
             x: 48,
             y: 47
-        }
+        },
 
     ],
 

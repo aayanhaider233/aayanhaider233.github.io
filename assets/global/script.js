@@ -1196,11 +1196,9 @@ var projectFieldFilters =
 var projectToolFilters =
     document.getElementById("project-tool-filters");
 
-var activeField =
-    "All";
+var activeFields = ["All"];
 
-var activeTool =
-    "All";
+var activeTools = ["All"];
 
 
 function getUniqueProjectTags(key) {
@@ -1240,24 +1238,90 @@ function createProjectFilter(
     button.textContent =
         label;
 
-    if (
-        (type === "field" && activeField === label) ||
-        (type === "tool" && activeTool === label)
-    ) {
+
+    var activeFilters =
+        type === "field"
+            ? activeFields
+            : activeTools;
+
+
+    if (activeFilters.includes(label)) {
         button.classList.add("is-active");
     }
+
 
     button.addEventListener(
         "click",
         function () {
 
-            if (type === "field") {
-                activeField = label;
+            var filters =
+                type === "field"
+                    ? activeFields
+                    : activeTools;
+
+
+            /*
+             * ---------------------------------------------
+             * "All" is mutually exclusive.
+             * ---------------------------------------------
+             */
+
+            if (label === "All") {
+
+                if (type === "field") {
+                    activeFields = ["All"];
+                } else {
+                    activeTools = ["All"];
+                }
+
             }
 
-            if (type === "tool") {
-                activeTool = label;
+
+            /*
+             * ---------------------------------------------
+             * Selecting another filter removes "All"
+             * and toggles the selected option.
+             * ---------------------------------------------
+             */
+
+            else {
+
+                var allIndex =
+                    filters.indexOf("All");
+
+                if (allIndex !== -1) {
+                    filters.splice(allIndex, 1);
+                }
+
+
+                var index =
+                    filters.indexOf(label);
+
+
+                if (index === -1) {
+
+                    filters.push(label);
+
+                } else {
+
+                    filters.splice(index, 1);
+
+                }
+
+
+                /*
+                 * If nothing remains selected,
+                 * automatically return to All.
+                 */
+
+                if (filters.length === 0) {
+
+                    filters.push("All");
+
+                }
+
             }
+
 
             renderProjectFilters();
 
@@ -1265,6 +1329,7 @@ function createProjectFilter(
 
         }
     );
+
 
     container.appendChild(button);
 }
@@ -1327,12 +1392,22 @@ function renderProjectFilters() {
 function projectMatchesFilters(project) {
 
     var matchesField =
-        activeField === "All" ||
-        (project.fields || []).includes(activeField);
+        activeFields.includes("All") ||
+        activeFields.some(function (field) {
+
+            return (project.fields || []).includes(field);
+
+        });
+
 
     var matchesTool =
-        activeTool === "All" ||
-        (project.tools || []).includes(activeTool);
+        activeTools.includes("All") ||
+        activeTools.some(function (tool) {
+
+            return (project.tools || []).includes(tool);
+
+        });
+
 
     return matchesField && matchesTool;
 }
