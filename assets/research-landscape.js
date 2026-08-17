@@ -752,35 +752,29 @@
 
         nodeElements.push({
 
-            data:
-                node,
+            data: node,
 
-            group:
-                group,
+            group: group,
 
-            shape:
-                shape,
+            shape: shape,
 
-            hoverShape:
-                hoverShape,
+            hoverShape: hoverShape,
 
-            labelGroup:
-                labelGroup,
+            labelGroup: labelGroup,
 
-            backdrop:
-                backdrop,
+            backdrop: backdrop,
 
-            label:
-                label,
+            label: label,
 
-            projectHint:
-                projectHint,
+            projectHint: projectHint,
 
-            dragging:
-                false,
+            dragging: false,
 
-            pointerDownPosition:
-                null
+            pointerDownPosition: null,
+
+            vx: 0,
+
+            vy: 0
 
         });
 
@@ -1798,6 +1792,8 @@
                 "mouseenter",
                 function () {
 
+                    item.isHovered = true;
+
                     if (
                         !item.dragging
                     ) {
@@ -1815,6 +1811,8 @@
             item.group.addEventListener(
                 "mouseleave",
                 function () {
+
+                    item.isHovered = false;
 
                     if (
                         !item.dragging
@@ -1911,6 +1909,8 @@
                         item.dragging =
                             true;
 
+                        item.vx = 0;
+                        item.vy = 0;
 
                         hideHover(
                             item
@@ -1963,11 +1963,6 @@
 
 
                     updatePositions();
-
-
-                    dimBehindLabel(
-                        item
-                    );
 
                 }
             );
@@ -2034,6 +2029,18 @@
                     item.dragging =
                         false;
 
+                    clearObscured();
+
+                    if (
+                        item.isHovered
+                    ) {
+
+                        showHover(
+                            item
+                        );
+
+                    }
+
                 }
             );
 
@@ -2055,6 +2062,349 @@
     );
 
 
+    /* =========================================================
+        FORCE SIMULATION
+        ========================================================= */
+
+        var forceAnimation = null;
+
+
+        function applyForces() {
+
+            var config =
+                RESEARCH_LANDSCAPE_FORCE;
+
+
+            /*
+            * REPULSION
+            */
+
+            nodeElements.forEach(function (a) {
+
+                nodeElements.forEach(function (b) {
+
+                    if (a === b) {
+                        return;
+                    }
+
+
+                    var ax =
+                        getPosition(a.data);
+
+                    var bx =
+                        getPosition(b.data);
+
+
+                    var dx =
+                        ax.x - bx.x;
+
+                    var dy =
+                        ax.y - bx.y;
+
+
+                    var distance =
+                        Math.hypot(dx, dy);
+
+
+                    if (distance < 0.001) {
+                        distance = 0.001;
+                    }
+
+
+                    /*
+                    * Minimum separation.
+                    */
+
+                    if (
+                        distance <
+                        config.minDistance
+                    ) {
+
+                        var force =
+                            config.repulsion /
+                            (
+                                distance *
+                                distance
+                            );
+
+
+                        a.vx +=
+                            (
+                                dx /
+                                distance
+                            ) *
+                            force;
+
+                        a.vy +=
+                            (
+                                dy /
+                                distance
+                            ) *
+                            force;
+
+                    }
+
+                });
+
+            });
+
+
+            /*
+            * EDGE ATTRACTION
+            */
+
+            edges.forEach(function (edge) {
+
+                var source =
+                    nodeElements.find(
+                        function (item) {
+
+                            return (
+                                item.data.id ===
+                                edge.source
+                            );
+
+                        }
+                    );
+
+
+                var target =
+                    nodeElements.find(
+                        function (item) {
+
+                            return (
+                                item.data.id ===
+                                edge.target
+                            );
+
+                        }
+                    );
+
+
+                if (!source || !target) {
+                    return;
+                }
+
+
+                var sourcePosition =
+                    getPosition(
+                        source.data
+                    );
+
+                var targetPosition =
+                    getPosition(
+                        target.data
+                    );
+
+
+                var dx =
+                    targetPosition.x -
+                    sourcePosition.x;
+
+                var dy =
+                    targetPosition.y -
+                    sourcePosition.y;
+
+
+                var distance =
+                    Math.hypot(dx, dy);
+
+
+                if (distance < 0.001) {
+                    return;
+                }
+
+
+                var difference =
+                    distance -
+                    config.idealEdgeLength;
+
+
+                var force =
+                    difference *
+                    config.attraction;
+
+
+                var fx =
+                    (
+                        dx /
+                        distance
+                    ) *
+                    force;
+
+
+                var fy =
+                    (
+                        dy /
+                        distance
+                    ) *
+                    force;
+
+
+                source.vx += fx;
+                source.vy += fy;
+
+                target.vx -= fx;
+                target.vy -= fy;
+
+            });
+
+
+            /*
+            * CENTRE GRAVITY
+            */
+
+            nodeElements.forEach(function (item) {
+
+                if (item.dragging) {
+                    return;
+                }
+
+
+                var position =
+                    getPosition(
+                        item.data
+                    );
+
+
+                var centreX =
+                    SVG_WIDTH / 2;
+
+                var centreY =
+                    SVG_HEIGHT / 2;
+
+
+                item.vx +=
+                    (
+                        centreX -
+                        position.x
+                    ) *
+                    config.centerStrength;
+
+
+                item.vy +=
+                    (
+                        centreY -
+                        position.y
+                    ) *
+                    config.centerStrength;
+
+            });
+
+        }
+
+        function updateForceSimulation() {
+
+            var config =
+                RESEARCH_LANDSCAPE_FORCE;
+
+
+            applyForces();
+
+
+            nodeElements.forEach(function (item) {
+
+                if (item.dragging) {
+
+                    item.vx = 0;
+                    item.vy = 0;
+
+                    return;
+
+                }
+
+
+                item.vx *=
+                    config.damping;
+
+                item.vy *=
+                    config.damping;
+
+
+                var position =
+                    getPosition(
+                        item.data
+                    );
+
+
+                var newX =
+                    position.x +
+                    item.vx;
+
+
+                var newY =
+                    position.y +
+                    item.vy;
+
+
+                /*
+                * Keep nodes inside the graph.
+                */
+
+                newX =
+                    clamp(
+                        newX,
+                        20,
+                        SVG_WIDTH - 20
+                    );
+
+
+                newY =
+                    clamp(
+                        newY,
+                        20,
+                        SVG_HEIGHT - 20
+                    );
+
+
+                item.data.x =
+                    newX /
+                    SVG_WIDTH *
+                    100;
+
+
+                item.data.y =
+                    newY /
+                    SVG_HEIGHT *
+                    100;
+
+            });
+
+
+        updatePositions();
+
+
+function forceLoop() {
+
+    if (
+        RESEARCH_LANDSCAPE_FORCE.enabled
+    ) {
+
+        for (
+            var i = 0;
+            i <
+            RESEARCH_LANDSCAPE_FORCE.iterationsPerFrame;
+            i++
+        ) {
+
+            updateForceSimulation();
+
+        }
+
+    }
+
+
+    forceAnimation =
+        requestAnimationFrame(
+            forceLoop
+        );
+
+}
+
+
+forceLoop();
+
+}
     /* =========================================================
        UPDATE
        ========================================================= */
