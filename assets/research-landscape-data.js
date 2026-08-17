@@ -1,21 +1,17 @@
 /*
  * ============================================================
- * RESEARCH LANDSCAPE — CONFIGURATION
+ * RESEARCH LANDSCAPE — DATA
  * ============================================================
  *
- * NODE TYPES
+ * Node types:
  *
- * exploring  = filled circle
- * emerging   = hollow circle
- * unpublished = hollow diamond
- * published   = filled diamond
+ * exploring   → filled circle
+ * emerging    → hollow circle
+ * unpublished → hollow diamond
+ * published   → filled diamond
  *
- * Positions are percentages of the graph:
- * x: 0–100
- * y: 0–100
- *
- * These are only starting positions.
- * Nodes can be freely dragged in the browser.
+ * x / y are initial positions as percentages of the graph.
+ * Nodes remain draggable after the graph loads.
  * ============================================================
  */
 
@@ -32,7 +28,7 @@ const RESEARCH_LANDSCAPE = {
             name: "Causal Inference",
             type: "exploring",
             x: 31,
-            y: 39
+            y: 38
         },
 
         {
@@ -40,7 +36,7 @@ const RESEARCH_LANDSCAPE = {
             name: "Machine Learning",
             type: "exploring",
             x: 50,
-            y: 28
+            y: 27
         },
 
         {
@@ -48,7 +44,7 @@ const RESEARCH_LANDSCAPE = {
             name: "Causal ML",
             type: "exploring",
             x: 41,
-            y: 57
+            y: 56
         },
 
         {
@@ -69,7 +65,7 @@ const RESEARCH_LANDSCAPE = {
             name: "NLP",
             type: "emerging",
             x: 76,
-            y: 27
+            y: 26
         },
 
         {
@@ -77,7 +73,7 @@ const RESEARCH_LANDSCAPE = {
             name: "Speech Processing",
             type: "emerging",
             x: 87,
-            y: 49
+            y: 48
         },
 
         {
@@ -106,32 +102,27 @@ const RESEARCH_LANDSCAPE = {
 
 
         // ----------------------------------------------------
-        // PROJECT / PUBLICATION
+        // UNPUBLISHED WORK
         // ----------------------------------------------------
 
         {
-            id: "thesis-project",
+            id: "thesis",
             name: "Thesis",
             type: "unpublished",
             x: 48,
-            y: 48
+            y: 47
         }
 
     ],
 
 
     // --------------------------------------------------------
-    // EDGES
-    // --------------------------------------------------------
-    //
-    // Only relationships that currently exist go here.
-    //
-    // Causal inference + ML → Causal ML
-    // Causal ML + ML + Bioinformatics → Thesis
-    //
+    // RELATIONSHIPS
     // --------------------------------------------------------
 
     edges: [
+
+        // Causal Inference + Machine Learning → Causal ML
 
         {
             source: "causal-inference",
@@ -143,19 +134,23 @@ const RESEARCH_LANDSCAPE = {
             target: "causal-ml"
         },
 
+
+        // Causal ML + Machine Learning + Bioinformatics
+        // → Thesis
+
         {
             source: "causal-ml",
-            target: "thesis-project"
+            target: "thesis"
         },
 
         {
             source: "machine-learning",
-            target: "thesis-project"
+            target: "thesis"
         },
 
         {
             source: "bioinformatics",
-            target: "thesis-project"
+            target: "thesis"
         }
 
     ]
