@@ -1184,7 +1184,120 @@
 
   updateHeaderProgress();
 
+  /* =========================================================
+     PROJECTS
+     ========================================================= */
 
+  var projectsList =
+      document.getElementById("projects-list");
+
+
+  function renderProjects() {
+
+      if (
+          !projectsList ||
+          typeof PROJECTS === "undefined"
+      ) {
+          return;
+      }
+
+
+      projectsList.innerHTML =
+          PROJECTS.map(function (project) {
+
+              var fieldTags =
+                  project.fields.map(function (field) {
+
+                      return (
+                          '<span>' +
+                          field +
+                          '</span>'
+                      );
+
+                  }).join("");
+
+
+              var toolTags =
+                  project.tools.map(function (tool) {
+
+                      return (
+                          '<span>' +
+                          tool +
+                          '</span>'
+                      );
+
+                  }).join("");
+
+
+              var repositoryLink =
+                  project.repository
+                  ?
+                  (
+                      '<a href="' +
+                      project.repository +
+                      '" target="_blank" rel="noopener" ' +
+                      'class="project-repository">' +
+                      'Visit repository ↗' +
+                      '</a>'
+                  )
+                  :
+                  "";
+
+
+              return (
+
+                  '<article class="project-entry">' +
+
+                      '<div class="project-information">' +
+
+                          '<h3>' +
+                              project.title +
+                          '</h3>' +
+
+                          (
+                              project.subtitle
+                              ?
+                              '<p class="project-subtitle">' +
+                                  project.subtitle +
+                              '</p>'
+                              :
+                              ''
+                          ) +
+
+                          '<div class="project-tags">' +
+
+                              '<div class="project-tag-row project-fields">' +
+                                  fieldTags +
+                              '</div>' +
+
+                              '<div class="project-tag-row project-tools">' +
+                                  toolTags +
+                              '</div>' +
+
+                          '</div>' +
+
+                      '</div>' +
+
+
+                      '<div class="project-description">' +
+
+                          '<p>' +
+                              project.description +
+                          '</p>' +
+
+                          repositoryLink +
+
+                      '</div>' +
+
+                  '</article>'
+
+              );
+
+          }).join("");
+  }
+
+
+  renderProjects();
   /* =========================================================
      AUTO-HIDING SCROLLBAR
      ========================================================= */
