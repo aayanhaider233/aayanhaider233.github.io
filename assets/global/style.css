@@ -255,7 +255,119 @@ html.is-scrolling ::-webkit-scrollbar-thumb { background: var(--olive); }
 /* =========================================================
    PROJECTS
    ========================================================= */
+/* ---------------------------------------------------------
+   Project filters
+   --------------------------------------------------------- */
 
+.project-filters {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    margin-bottom: 28px;
+
+}
+
+
+.project-filter-group {
+
+    display: flex;
+
+    align-items: baseline;
+
+    gap: 18px;
+
+}
+
+
+.project-filter-label {
+
+    width: 48px;
+
+    flex: 0 0 48px;
+
+    color: var(--muted);
+
+    font-size: .61rem;
+
+    font-weight: 700;
+
+    letter-spacing: .1em;
+
+    text-transform: uppercase;
+
+}
+
+
+.project-filter-options {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+}
+
+
+.project-filter-button {
+
+    padding: 4px 9px;
+
+    border: 1px solid rgba(42,55,35,.22);
+
+    border-radius: 20px;
+
+    color: var(--muted);
+
+    font-size: .61rem;
+
+    font-weight: 500;
+
+    transition:
+        color .2s ease,
+        border-color .2s ease,
+        background-color .2s ease;
+
+}
+
+
+.project-filter-button:hover {
+
+    color: var(--olive);
+
+    border-color: var(--olive);
+
+}
+
+
+.project-filter-button.is-active {
+
+    color: var(--white);
+
+    background: var(--olive);
+
+    border-color: var(--olive);
+
+}
+
+
+@media (max-width: 700px) {
+
+    .project-filter-group {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 7px;
+
+    }
+
+}
 .projects-list {
     border-top: 1px solid var(--border);
 }

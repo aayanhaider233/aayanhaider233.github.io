@@ -1183,121 +1183,360 @@
 
 
   updateHeaderProgress();
+/* =========================================================
+   PROJECTS
+   ========================================================= */
 
-  /* =========================================================
-     PROJECTS
-     ========================================================= */
+var projectsList =
+    document.getElementById("projects-list");
 
-  var projectsList =
-      document.getElementById("projects-list");
+var projectFieldFilters =
+    document.getElementById("project-field-filters");
 
+var projectToolFilters =
+    document.getElementById("project-tool-filters");
 
-  function renderProjects() {
+var activeField =
+    "All";
 
-      if (
-          !projectsList ||
-          typeof PROJECTS === "undefined"
-      ) {
-          return;
-      }
-
-
-      projectsList.innerHTML =
-          PROJECTS.map(function (project) {
-
-              var fieldTags =
-                  project.fields.map(function (field) {
-
-                      return (
-                          '<span>' +
-                          field +
-                          '</span>'
-                      );
-
-                  }).join("");
+var activeTool =
+    "All";
 
 
-              var toolTags =
-                  project.tools.map(function (tool) {
+function getUniqueProjectTags(key) {
 
-                      return (
-                          '<span>' +
-                          tool +
-                          '</span>'
-                      );
+    var tags = [];
 
-                  }).join("");
+    PROJECTS.forEach(function (project) {
 
+        (project[key] || []).forEach(function (tag) {
 
-              var repositoryLink =
-                  project.repository
-                  ?
-                  (
-                      '<a href="' +
-                      project.repository +
-                      '" target="_blank" rel="noopener" ' +
-                      'class="project-repository">' +
-                      'Visit repository ↗' +
-                      '</a>'
-                  )
-                  :
-                  "";
+            if (!tags.includes(tag)) {
+                tags.push(tag);
+            }
+
+        });
+
+    });
+
+    return tags.sort();
+}
 
 
-              return (
+function createProjectFilter(
+    container,
+    label,
+    type
+) {
 
-                  '<article class="project-entry">' +
+    var button =
+        document.createElement("button");
 
-                      '<div class="project-information">' +
+    button.type = "button";
 
-                          '<h3>' +
-                              project.title +
-                          '</h3>' +
+    button.className =
+        "project-filter-button";
 
-                          (
-                              project.subtitle
-                              ?
-                              '<p class="project-subtitle">' +
-                                  project.subtitle +
-                              '</p>'
-                              :
-                              ''
-                          ) +
+    button.textContent =
+        label;
 
-                          '<div class="project-tags">' +
+    if (
+        (type === "field" && activeField === label) ||
+        (type === "tool" && activeTool === label)
+    ) {
+        button.classList.add("is-active");
+    }
 
-                              '<div class="project-tag-row project-fields">' +
-                                  fieldTags +
-                              '</div>' +
+    button.addEventListener(
+        "click",
+        function () {
 
-                              '<div class="project-tag-row project-tools">' +
-                                  toolTags +
-                              '</div>' +
+            if (type === "field") {
+                activeField = label;
+            }
 
-                          '</div>' +
+            if (type === "tool") {
+                activeTool = label;
+            }
 
-                      '</div>' +
+            renderProjectFilters();
 
+            renderProjects();
 
-                      '<div class="project-description">' +
+        }
+    );
 
-                          '<p>' +
-                              project.description +
-                          '</p>' +
-
-                          repositoryLink +
-
-                      '</div>' +
-
-                  '</article>'
-
-              );
-
-          }).join("");
-  }
+    container.appendChild(button);
+}
 
 
-  renderProjects();
+function renderProjectFilters() {
+
+    if (
+        !projectFieldFilters ||
+        !projectToolFilters
+    ) {
+        return;
+    }
+
+
+    projectFieldFilters.innerHTML = "";
+
+    projectToolFilters.innerHTML = "";
+
+
+    createProjectFilter(
+        projectFieldFilters,
+        "All",
+        "field"
+    );
+
+
+    getUniqueProjectTags("fields")
+        .forEach(function (field) {
+
+            createProjectFilter(
+                projectFieldFilters,
+                field,
+                "field"
+            );
+
+        });
+
+
+    createProjectFilter(
+        projectToolFilters,
+        "All",
+        "tool"
+    );
+
+
+    getUniqueProjectTags("tools")
+        .forEach(function (tool) {
+
+            createProjectFilter(
+                projectToolFilters,
+                tool,
+                "tool"
+            );
+
+        });
+}
+
+
+function projectMatchesFilters(project) {
+
+    var matchesField =
+        activeField === "All" ||
+        (project.fields || []).includes(activeField);
+
+    var matchesTool =
+        activeTool === "All" ||
+        (project.tools || []).includes(activeTool);
+
+    return matchesField && matchesTool;
+}
+
+
+function renderProjects() {
+
+    if (!projectsList) {
+        return;
+    }
+
+
+    projectsList.innerHTML = "";
+
+
+    PROJECTS
+        .filter(projectMatchesFilters)
+        .forEach(function (project) {
+
+            var entry =
+                document.createElement("article");
+
+            entry.className =
+                "project-entry";
+
+
+            /*
+             * -------------------------------------------------
+             * Left side
+             * -------------------------------------------------
+             */
+
+            var left =
+                document.createElement("div");
+
+            left.className =
+                "project-main";
+
+
+            var title =
+                document.createElement("h3");
+
+            title.textContent =
+                project.title;
+
+            left.appendChild(title);
+
+
+            if (project.subtitle) {
+
+                var subtitle =
+                    document.createElement("p");
+
+                subtitle.className =
+                    "project-subtitle";
+
+                subtitle.textContent =
+                    project.subtitle;
+
+                left.appendChild(subtitle);
+
+            }
+
+
+            /*
+             * -------------------------------------------------
+             * Field tags
+             * -------------------------------------------------
+             */
+
+            if (
+                project.fields &&
+                project.fields.length
+            ) {
+
+                var fields =
+                    document.createElement("div");
+
+                fields.className =
+                    "project-tags project-fields";
+
+
+                project.fields.forEach(function (field) {
+
+                    var tag =
+                        document.createElement("span");
+
+                    tag.className =
+                        "project-tag";
+
+                    tag.textContent =
+                        field;
+
+                    fields.appendChild(tag);
+
+                });
+
+
+                left.appendChild(fields);
+            }
+
+
+            /*
+             * -------------------------------------------------
+             * Tool tags
+             * -------------------------------------------------
+             */
+
+            if (
+                project.tools &&
+                project.tools.length
+            ) {
+
+                var tools =
+                    document.createElement("div");
+
+                tools.className =
+                    "project-tags project-tools";
+
+
+                project.tools.forEach(function (tool) {
+
+                    var tag =
+                        document.createElement("span");
+
+                    tag.className =
+                        "project-tag";
+
+                    tag.textContent =
+                        tool;
+
+                    tools.appendChild(tag);
+
+                });
+
+
+                left.appendChild(tools);
+            }
+
+
+            /*
+             * -------------------------------------------------
+             * Right side
+             * -------------------------------------------------
+             */
+
+            var right =
+                document.createElement("div");
+
+            right.className =
+                "project-description";
+
+
+            if (project.description) {
+
+                var description =
+                    document.createElement("p");
+
+                description.textContent =
+                    project.description;
+
+                right.appendChild(description);
+
+            }
+
+
+            if (project.repository) {
+
+                var repository =
+                    document.createElement("a");
+
+                repository.href =
+                    project.repository;
+
+                repository.target =
+                    "_blank";
+
+                repository.rel =
+                    "noopener noreferrer";
+
+                repository.textContent =
+                    "Visit repository →";
+
+                repository.className =
+                    "project-repository";
+
+                right.appendChild(repository);
+
+            }
+
+
+            entry.appendChild(left);
+
+            entry.appendChild(right);
+
+            projectsList.appendChild(entry);
+
+        });
+}
+
+
+renderProjectFilters();
+
+renderProjects();
   /* =========================================================
      AUTO-HIDING SCROLLBAR
      ========================================================= */
