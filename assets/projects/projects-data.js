@@ -29,7 +29,28 @@ var PROJECTS = [
             "https://github.com/aayanhaider233/recursive-causal-fs"
     },
 
+    {
+        title: "Interactive Aquatic Ecosystem Simulation",
 
+        subtitle:
+            "A real-time 3D aquarium simulation",
+
+        fields: [
+            "Graphics Design",
+            "Animation",
+        ],
+
+        tools: [
+            "Python",
+            "OpenGL"
+        ],
+
+        description:
+            "An interactive 3D aquarium ecosystem developed with Python using OpenGL, implementing autonomous fish and predator agents with emergent movement and interaction behaviors. The simulation combines Boids-inspired flocking, predator-prey dynamics, food-seeking, hunger/death mechanics, environmental avoidance, and interactive disturbances.",
+
+        repository:
+            "https://github.com/aayanhaider233/aquatic-eco-sim/"
+    },
     // {
     //     title:
     //         "Reinforcement Learning → Continual Learning → Language",

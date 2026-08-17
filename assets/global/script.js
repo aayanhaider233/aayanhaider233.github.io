@@ -1369,7 +1369,7 @@ function renderProjects() {
                 document.createElement("div");
 
             left.className =
-                "project-main";
+                "project-information";
 
 
             var title =
@@ -1398,79 +1398,87 @@ function renderProjects() {
 
 
             /*
-             * -------------------------------------------------
-             * Field tags
-             * -------------------------------------------------
-             */
+ * -------------------------------------------------
+ * Tags
+ * -------------------------------------------------
+ */
 
-            if (
-                project.fields &&
-                project.fields.length
-            ) {
+var tags =
+    document.createElement("div");
 
-                var fields =
-                    document.createElement("div");
-
-                fields.className =
-                    "project-tags project-fields";
+tags.className =
+    "project-tags";
 
 
-                project.fields.forEach(function (field) {
+/*
+ * Field tags — row 1
+ */
 
-                    var tag =
-                        document.createElement("span");
+if (
+    project.fields &&
+    project.fields.length
+) {
 
-                    tag.className =
-                        "project-tag";
+    var fieldRow =
+        document.createElement("div");
 
-                    tag.textContent =
-                        field;
-
-                    fields.appendChild(tag);
-
-                });
-
-
-                left.appendChild(fields);
-            }
+    fieldRow.className =
+        "project-tag-row";
 
 
-            /*
-             * -------------------------------------------------
-             * Tool tags
-             * -------------------------------------------------
-             */
+    project.fields.forEach(function (field) {
 
-            if (
-                project.tools &&
-                project.tools.length
-            ) {
+        var tag =
+            document.createElement("span");
 
-                var tools =
-                    document.createElement("div");
+        tag.textContent =
+            field;
 
-                tools.className =
-                    "project-tags project-tools";
+        fieldRow.appendChild(tag);
+
+    });
 
 
-                project.tools.forEach(function (tool) {
-
-                    var tag =
-                        document.createElement("span");
-
-                    tag.className =
-                        "project-tag";
-
-                    tag.textContent =
-                        tool;
-
-                    tools.appendChild(tag);
-
-                });
+    tags.appendChild(fieldRow);
+}
 
 
-                left.appendChild(tools);
-            }
+/*
+ * Tool tags — row 2
+ */
+
+if (
+    project.tools &&
+    project.tools.length
+) {
+
+    var toolRow =
+        document.createElement("div");
+
+    toolRow.className =
+        "project-tag-row";
+
+
+    project.tools.forEach(function (tool) {
+
+        var tag =
+            document.createElement("span");
+
+        tag.textContent =
+            tool;
+
+        toolRow.appendChild(tag);
+
+    });
+
+
+    tags.appendChild(toolRow);
+}
+
+
+if (tags.children.length) {
+    left.appendChild(tags);
+}
 
 
             /*
