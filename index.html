@@ -8,18 +8,22 @@
 
     <meta
         name="description"
-        content="Aayan Haider — Computer Science and Mathematics researcher interested in causal inference, computational biology, machine learning, and speech processing."
+        content="Aayan Haider - Computer Science and Mathematics researcher interested in exploring causal inference, NLP, speech processing & linguistics."
     >
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap"
         rel="stylesheet"
     >
+
 </head>
 
 <body>
@@ -32,7 +36,7 @@
 
     <div class="container nav-container">
 
-        <a href="#top" class="site-name">
+        <a href="#profile" class="site-name">
             Aayan Haider
         </a>
 
@@ -41,13 +45,12 @@
             <button
                 type="button"
                 role="tab"
-                id="tab-research"
-                aria-controls="panel-research"
+                id="tab-profile"
+                aria-controls="panel-profile"
                 aria-selected="true"
                 class="tab is-active"
-                data-index="01"
             >
-                Research
+                Profile
             </button>
 
             <button
@@ -58,7 +61,6 @@
                 aria-selected="false"
                 tabindex="-1"
                 class="tab"
-                data-index="02"
             >
                 Projects
             </button>
@@ -71,35 +73,8 @@
                 aria-selected="false"
                 tabindex="-1"
                 class="tab"
-                data-index="03"
             >
                 Education
-            </button>
-
-            <button
-                type="button"
-                role="tab"
-                id="tab-publications"
-                aria-controls="panel-publications"
-                aria-selected="false"
-                tabindex="-1"
-                class="tab"
-                data-index="04"
-            >
-                Publications
-            </button>
-
-            <button
-                type="button"
-                role="tab"
-                id="tab-technical"
-                aria-controls="panel-technical"
-                aria-selected="false"
-                tabindex="-1"
-                class="tab"
-                data-index="05"
-            >
-                Technical
             </button>
 
             <button
@@ -110,7 +85,6 @@
                 aria-selected="false"
                 tabindex="-1"
                 class="tab"
-                data-index="06"
             >
                 Contact
             </button>
@@ -119,211 +93,131 @@
 
     </div>
 
-    <div class="tab-indicator" aria-hidden="true"></div>
-
 </header>
 
 
 <main id="top">
 
-<!-- =========================
-     HERO
-========================= -->
-
-<section class="hero">
-
-    <div class="container hero-grid">
-
-        <div class="hero-content">
-
-            <p class="eyebrow">
-                Computer Science · Mathematics · Research
-            </p>
-
-            <h1>
-                Aayan<br>
-                <span>Haider</span>
-            </h1>
-
-            <p class="hero-description">
-                Computer Science and Mathematics graduate interested in
-                understanding complex systems through causal inference,
-                machine learning, computational biology, and intelligent
-                systems.
-            </p>
-
-            <div class="hero-actions">
-
-                <a
-                    href="assets/Aayan_Haider_CV.pdf"
-                    class="button button-primary"
-                >
-                    Curriculum Vitae
-                </a>
-
-                <a
-                    href="https://github.com/aayanhaider233"
-                    class="button button-secondary"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    GitHub
-                </a>
-
-            </div>
-
-            <div class="social-links">
-
-                <a
-                    href="https://www.linkedin.com/in/aayan-haider-6667a52a3/"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    LinkedIn
-                </a>
-
-                <a
-                    href="https://orcid.org/0009-0000-1401-4452"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    ORCID
-                </a>
-
-                <a href="mailto:aayanhaider112358@gmail.com">
-                    Email
-                </a>
-
-            </div>
-
-        </div>
-
-
-        <div class="hero-visual">
-
-            <div class="profile-card">
-
-                <div class="profile-photo">
-                    AH
-                </div>
-
-                <div class="profile-section">
-
-                    <span class="profile-label">
-                        Currently
-                    </span>
-
-                    <p>
-                        M.Sc. student in Computer Science
-                    </p>
-
-                </div>
-
-                <div class="profile-section">
-
-                    <span class="profile-label">
-                        Institution
-                    </span>
-
-                    <p>
-                        Doshisha University
-                    </p>
-
-                </div>
-
-                <div class="profile-section">
-
-                    <span class="profile-label">
-                        Background
-                    </span>
-
-                    <p>
-                        B.Sc. Computer Science<br>
-                        Double Major in Mathematics
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- =========================
-     TAB PANELS
-========================= -->
-
 <div class="panels">
 
-    <div class="container">
+    <!-- =========================
+         PROFILE
+    ========================= -->
 
+    <section
+        id="panel-profile"
+        role="tabpanel"
+        aria-labelledby="tab-profile"
+        class="tabpanel is-active"
+        tabindex="0"
+    >
 
-        <!-- RESEARCH -->
-        <section
-            id="panel-research"
-            role="tabpanel"
-            aria-labelledby="tab-research"
-            class="tabpanel is-active"
-            tabindex="0"
-        >
+        <div class="container">
 
-            <div class="section-heading">
+            <!-- HERO -->
+            <div class="hero-grid">
 
-                <span class="section-number">01</span>
+                <div class="hero-content">
 
-                <div>
-                    <p class="eyebrow">Research</p>
-                    <h2>Questions I am interested in</h2>
+                    
+                    <h1>
+                        Aayan Haider
+                    </h1>
+                    
+                    <p class="eyebrow">
+                        Computer Science · Research
+                    </p>
+
+                    <p class="hero-description">
+                        Computer Science and Mathematics graduate interested in
+                        understanding complex systems through causal inference,
+                        machine learning, and intelligent
+                        systems. Interested in exploring natural language processing, speech processing and linguistics.
+                    </p>
+
+                    <!-- <div class="hero-actions">
+
+                        <a
+                            href="assets/Aayan_Haider_CV.pdf"
+                            class="button button-primary"
+                        >
+                            Curriculum Vitae
+                        </a>
+
+                        <a
+                            href="https://github.com/aayanhaider233"
+                            class="button button-secondary"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            GitHub
+                        </a>
+
+                    </div> -->
+
+                    <div class="social-links">
+
+                        <a
+                            href="https://www.linkedin.com/in/aayan-haider-6667a52a3/"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            LinkedIn
+                        </a>
+
+                        <a
+                            href="https://github.com/aayanhaider233/"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            GitHub
+                        </a>
+
+                        <a
+                            href="https://orcid.org/0009-0000-1401-4452"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            ORCID
+                        </a>
+
+                        <a href="mailto:aayanhaider112358@gmail.com">
+                            Email
+                        </a>
+
+                    </div>
+
                 </div>
 
-            </div>
 
-            <div class="research-grid">
+                <div class="hero-visual">
 
-                <article class="research-card">
-                    <span class="research-index">01</span>
-                    <h3>Causal Inference</h3>
-                    <p>
-                        Causal discovery and inference for high-dimensional
-                        observational data, with an emphasis on interpretable
-                        structures and robust statistical reasoning.
-                    </p>
-                </article>
+                    <div class="profile-card">
 
-                <article class="research-card">
-                    <span class="research-index">02</span>
-                    <h3>Computational Biology</h3>
-                    <p>
-                        Computational approaches to molecular data, particularly
-                        DNA methylation, gene regulation, disease mechanisms,
-                        and biomarker discovery.
-                    </p>
-                </article>
+                        <div class="profile-photo">
+                            <img src="assets/images/profile.jpg" alt="Aayan Haider">
+                        </div>
 
-                <article class="research-card">
-                    <span class="research-index">03</span>
-                    <h3>Machine Learning</h3>
-                    <p>
-                        Learning systems that combine predictive capability with
-                        interpretability, structure, and principled reasoning.
-                    </p>
-                </article>
+                        <div class="profile-section">
 
-                <article class="research-card">
-                    <span class="research-index">04</span>
-                    <h3>Speech & Intelligent Systems</h3>
-                    <p>
-                        Speech processing, adaptive agents, sequential learning,
-                        and systems capable of interacting with and learning from
-                        their environment.
-                    </p>
-                </article>
+                            <span class="profile-label">
+                                Academic Background
+                            </span>
 
-            </div>
+                            <p>
+                                B.Sc. Computer Science<br>
+                                Double Major in Mathematics
+                            </p>
+
+                            <a href="#education" class="profile-link">
+                                View education →
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             <div class="featured-block">
 
@@ -332,13 +226,11 @@
                     <p class="eyebrow">Featured Research</p>
 
                     <h2>
-                        From DMRs to<br>
-                        Disease Diagnosis
+                        Hierarchical Recursive Causal Feature Selection
                     </h2>
 
                     <p class="featured-subtitle">
-                        A Causal and Inferential Framework for Schizophrenia
-                        Using DNA Methylation
+                        For Explainable Schizophrenia Prediction from DNA Methylation
                     </p>
 
                 </div>
@@ -346,25 +238,30 @@
                 <div class="featured-content">
 
                     <p>
-                        My undergraduate thesis investigated whether hierarchical
-                        analysis of DNA methylation could identify biologically
-                        meaningful causal relationships associated with disease.
+                        Applying causal machine learning methods 
+                        to DNA methylation data in schizophrenia, 
+                        a computational framework for feature selection 
+                        in classification was developed. The resulting feature set 
+                        achieved predictive performance comparable to sets obtained 
+                        using conventional statistical feature reduction methods, 
+                        while providing the additional benefit of causal interpretability. 
                     </p>
 
                     <p>
-                        The framework combined differential methylation analysis,
-                        differentially methylated regions, gene mapping, WGCNA,
+                        The framework combined differential methylation analysis, 
+                        gene mapping, Weighted Gene Co-expression Network Analaysis (WGCNA),
                         causal discovery, and machine learning into a hierarchical
                         feature-selection pipeline.
                     </p>
 
                     <div class="tag-list">
                         <span>DNA methylation</span>
-                        <span>DMR</span>
-                        <span>WGCNA</span>
-                        <span>DirectLiNGAM</span>
-                        <span>DoWhy</span>
-                        <span>SHAP</span>
+                        <span>DMRs</span>
+                        <span>Schizophrenia</span>
+                        <span>Causal interpretability</span>
+                        <span>Causal discovery</span>
+                        <span>Feature selection</span>
+                        <span>High-dimensional data</span>
                     </div>
 
                     <a
@@ -373,333 +270,18 @@
                         rel="noopener"
                         class="text-link"
                     >
-                        Explore the project →
+                        GitHub Repository →
                     </a>
 
                 </div>
 
             </div>
 
-        </section>
 
+            <!-- TECHNICAL
+            <div class="section-heading section-heading-tight">
 
-        <!-- PROJECTS -->
-        <section
-            id="panel-projects"
-            role="tabpanel"
-            aria-labelledby="tab-projects"
-            class="tabpanel"
-            tabindex="0"
-            hidden
-        >
-
-            <div class="section-heading">
-
-                <span class="section-number">02</span>
-
-                <div>
-                    <p class="eyebrow">Projects</p>
-                    <h2>Selected work</h2>
-                </div>
-
-            </div>
-
-            <div class="project-grid">
-
-                <article class="project-card">
-
-                    <div class="project-top">
-                        <span class="project-type">Research</span>
-                        <span class="project-year">2026</span>
-                    </div>
-
-                    <h3>Causal & Inferential Framework for DNA Methylation</h3>
-
-                    <p>
-                        A hierarchical computational framework for identifying
-                        causal molecular features associated with schizophrenia
-                        from high-dimensional DNA methylation data.
-                    </p>
-
-                    <div class="tag-list">
-                        <span>Python</span>
-                        <span>R</span>
-                        <span>WGCNA</span>
-                        <span>DirectLiNGAM</span>
-                    </div>
-
-                    <a
-                        href="https://github.com/aayanhaider233/recursive-causal-fs"
-                        target="_blank"
-                        rel="noopener"
-                        class="project-link"
-                    >
-                        View repository <span>↗</span>
-                    </a>
-
-                </article>
-
-
-                <!-- <article class="project-card">
-
-                    <div class="project-top">
-                        <span class="project-type">Machine Learning</span>
-                        <span class="project-year">2026</span>
-                    </div>
-
-                    <h3>Reinforcement Learning Agent</h3>
-
-                    <p>
-                        An experimental reinforcement learning system exploring
-                        how agents learn policies through interaction, feedback,
-                        and progressively changing objectives.
-                    </p>
-
-                    <div class="tag-list">
-                        <span>Python</span>
-                        <span>RL</span>
-                        <span>Agents</span>
-                    </div>
-
-                    <a
-                        href="https://github.com/aayanhaider233/YOUR-REPOSITORY"
-                        target="_blank"
-                        rel="noopener"
-                        class="project-link"
-                    >
-                        View repository <span>↗</span>
-                    </a>
-
-                </article> -->
-
-
-                <!-- <article class="project-card">
-
-                    <div class="project-top">
-                        <span class="project-type">Intelligent Systems</span>
-                        <span class="project-year">2026</span>
-                    </div>
-
-                    <h3>Language-Guided Learning Agent</h3>
-
-                    <p>
-                        An experimental agent architecture investigating how
-                        natural-language instructions and feedback can guide
-                        learning and goal-directed behaviour.
-                    </p>
-
-                    <div class="tag-list">
-                        <span>Machine Learning</span>
-                        <span>NLP</span>
-                        <span>Agents</span>
-                    </div>
-
-                    <a
-                        href="https://github.com/aayanhaider233/YOUR-REPOSITORY"
-                        target="_blank"
-                        rel="noopener"
-                        class="project-link"
-                    >
-                        View repository <span>↗</span>
-                    </a>
-
-                </article> -->
-
-
-                <article class="project-card">
-
-                    <div class="project-top">
-                        <span class="project-type">Scientific Computing</span>
-                        <span class="project-year">Selected work</span>
-                    </div>
-
-                    <h3>Computational Analysis Projects</h3>
-
-                    <p>
-                        Additional work involving statistical modelling,
-                        network analysis, causal analysis, visualization,
-                        and scientific computing.
-                    </p>
-
-                    <div class="tag-list">
-                        <span>NumPy</span>
-                        <span>pandas</span>
-                        <span>NetworkX</span>
-                        <span>scikit-learn</span>
-                    </div>
-
-                    <a
-                        href="https://github.com/aayanhaider233"
-                        target="_blank"
-                        rel="noopener"
-                        class="project-link"
-                    >
-                        View GitHub <span>↗</span>
-                    </a>
-
-                </article>
-
-            </div>
-
-        </section>
-
-
-        <!-- EDUCATION -->
-        <section
-            id="panel-education"
-            role="tabpanel"
-            aria-labelledby="tab-education"
-            class="tabpanel"
-            tabindex="0"
-            hidden
-        >
-
-            <div class="section-heading">
-
-                <span class="section-number">03</span>
-
-                <div>
-                    <p class="eyebrow">Education</p>
-                    <h2>Academic background</h2>
-                </div>
-
-            </div>
-
-            <div class="timeline">
-
-                <article class="timeline-item">
-
-                    <div class="timeline-date">2026 —</div>
-
-                    <div class="timeline-content">
-                        <h3>M.Sc. in Computer Science</h3>
-                        <p class="institution">Doshisha University · Japan</p>
-                        <p>
-                            International Science and Technology Course,
-                            Computer Science major. Research in speech
-                            processing and intelligent systems.
-                        </p>
-                    </div>
-
-                </article>
-
-
-                <article class="timeline-item">
-
-                    <div class="timeline-date">2022 — 2026</div>
-
-                    <div class="timeline-content">
-                        <h3>B.Sc. in Computer Science</h3>
-                        <p class="institution">BRAC University · Bangladesh</p>
-                        <p>
-                            Double major in Computer Science and Mathematics.
-                            CGPA: <strong>3.91 / 4.00</strong>.
-                        </p>
-                        <p>
-                            Undergraduate thesis:
-                            <em>
-                                From DMRs to Disease Diagnosis: A Causal and
-                                Inferential Framework for Schizophrenia Using
-                                DNA Methylation
-                            </em>
-                        </p>
-                    </div>
-
-                </article>
-
-
-                <article class="timeline-item">
-
-                    <div class="timeline-date">2020 — 2022</div>
-
-                    <div class="timeline-content">
-                        <h3>Cambridge AS & A Level</h3>
-                        <p class="institution">Scholastica</p>
-                        <p>GPA: <strong>4.00</strong></p>
-                    </div>
-
-                </article>
-
-            </div>
-
-        </section>
-
-
-        <!-- PUBLICATIONS -->
-        <section
-            id="panel-publications"
-            role="tabpanel"
-            aria-labelledby="tab-publications"
-            class="tabpanel"
-            tabindex="0"
-            hidden
-        >
-
-            <div class="section-heading">
-
-                <span class="section-number">04</span>
-
-                <div>
-                    <p class="eyebrow">Publications</p>
-                    <h2>Research output</h2>
-                </div>
-
-            </div>
-
-            <!-- <article class="publication-card">
-
-                <div class="publication-status">UNDER REVIEW</div>
-
-                <div class="publication-body">
-
-                    <h3>
-                        From DMRs to Disease Diagnosis: A Causal and
-                        Inferential Framework for Schizophrenia Using DNA
-                        Methylation
-                    </h3>
-
-                    <p class="publication-authors">
-                        Aayan Haider · Fardin M. Rahin Hossain ·
-                        Syed Zamil Hasan Shoumo · et al.
-                    </p>
-
-                    <p>
-                        A hierarchical approach to causal discovery from DNA
-                        methylation data, integrating DMR analysis, gene-level
-                        modelling, network analysis, and causal inference.
-                    </p>
-
-                    <div class="publication-links">
-                        <a
-                            href="https://github.com/aayanhaider233/YOUR-REPOSITORY"
-                            target="_blank"
-                            rel="noopener"
-                        >
-                            Code
-                        </a>
-                        <a href="#">Manuscript</a>
-                    </div>
-
-                </div>
-
-            </article> -->
-
-        </section>
-
-
-        <!-- TECHNICAL -->
-        <section
-            id="panel-technical"
-            role="tabpanel"
-            aria-labelledby="tab-technical"
-            class="tabpanel"
-            tabindex="0"
-            hidden
-        >
-
-            <div class="section-heading">
-
-                <span class="section-number">05</span>
+                <span class="section-number">—</span>
 
                 <div>
                     <p class="eyebrow">Technical</p>
@@ -749,22 +331,196 @@
 
             </div>
 
-        </section>
+        </div> -->
+
+    </section>
 
 
-        <!-- CONTACT -->
-        <section
-            id="panel-contact"
-            role="tabpanel"
-            aria-labelledby="tab-contact"
-            class="tabpanel tabpanel-contact"
-            tabindex="0"
-            hidden
-        >
+    <!-- =========================
+         PROJECTS
+    ========================= -->
+
+    <section
+        id="panel-projects"
+        role="tabpanel"
+        aria-labelledby="tab-projects"
+        class="tabpanel"
+        tabindex="0"
+        hidden
+    >
+
+        <div class="container">
 
             <div class="section-heading">
 
-                <span class="section-number">06</span>
+                <div>
+                    <p class="eyebrow">Projects</p>
+                    <h2>Selected work</h2>
+                </div>
+
+            </div>
+
+            <div class="project-grid">
+
+                <article class="project-card">
+
+                    <div class="project-top">
+                        <span class="project-type">Research</span>
+                        <span class="project-year">2026</span>
+                    </div>
+
+                    <h3>Causal & Inferential Framework for DNA Methylation</h3>
+
+                    <p>
+                        A hierarchical computational framework for identifying
+                        causal molecular features associated with schizophrenia
+                        from high-dimensional DNA methylation data.
+                    </p>
+
+                    <div class="tag-list">
+                        <span>Python</span>
+                        <span>R</span>
+                        <span>WGCNA</span>
+                        <span>DirectLiNGAM</span>
+                    </div>
+
+                    <a
+                        href="https://github.com/aayanhaider233/recursive-causal-fs"
+                        target="_blank"
+                        rel="noopener"
+                        class="project-link"
+                    >
+                        View repository <span>↗</span>
+                    </a>
+
+                </article>
+
+
+                <article class="project-card">
+
+                    <div class="project-top">
+                        <span class="project-type">Scientific Computing</span>
+                        <span class="project-year">Selected work</span>
+                    </div>
+
+                    <h3>Computational Analysis Projects</h3>
+
+                    <p>
+                        Additional work involving statistical modelling,
+                        network analysis, causal analysis, visualization,
+                        and scientific computing.
+                    </p>
+
+                    <div class="tag-list">
+                        <span>NumPy</span>
+                        <span>pandas</span>
+                        <span>NetworkX</span>
+                        <span>scikit-learn</span>
+                    </div>
+
+                    <a
+                        href="https://github.com/aayanhaider233"
+                        target="_blank"
+                        rel="noopener"
+                        class="project-link"
+                    >
+                        View GitHub <span>↗</span>
+                    </a>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         EDUCATION
+    ========================= -->
+
+    <section
+        id="panel-education"
+        role="tabpanel"
+        aria-labelledby="tab-education"
+        class="tabpanel"
+        tabindex="0"
+        hidden
+    >
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <div>
+                    <p class="eyebrow">Education</p>
+                    <h2>Academic background</h2>
+                </div>
+
+            </div>
+
+            <div class="timeline">
+
+                <article class="timeline-item">
+
+                    <div class="timeline-date">2022 — 2026</div>
+
+                    <div class="timeline-content">
+                        <h3>B.Sc. in Computer Science</h3>
+                        <p class="institution">BRAC University · Bangladesh</p>
+                        <p>
+                            Double major in Computer Science and Mathematics.
+                            CGPA: <strong>3.91 / 4.00</strong>.
+                        </p>
+                        <p>
+                            Undergraduate thesis:
+                            <em>
+                                From DMRs to Disease Diagnosis: A Causal and
+                                Inferential Framework for Schizophrenia Using
+                                DNA Methylation
+                            </em>
+                        </p>
+                    </div>
+
+                </article>
+
+
+                <article class="timeline-item">
+
+                    <div class="timeline-date">2020 — 2022</div>
+
+                    <div class="timeline-content">
+                        <h3>Cambridge AS & A Level</h3>
+                        <p class="institution">Scholastica</p>
+                        <p>GPA: <strong>4.00</strong></p>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         CONTACT
+    ========================= -->
+
+    <section
+        id="panel-contact"
+        role="tabpanel"
+        aria-labelledby="tab-contact"
+        class="tabpanel tabpanel-contact"
+        tabindex="0"
+        hidden
+    >
+
+        <div class="container">
+
+            <div class="section-heading">
 
                 <div>
                     <p class="eyebrow">Contact</p>
@@ -817,10 +573,9 @@
 
             </div>
 
-        </section>
+        </div>
 
-
-    </div>
+    </section>
 
 </div>
 
@@ -843,7 +598,7 @@
 
 </footer>
 
-<script src="script.js"></script>
+<script src="assets/script.js"></script>
 
 </body>
 </html>
