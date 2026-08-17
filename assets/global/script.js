@@ -102,12 +102,100 @@
   }
   activate(initial, { updateHash: false, instant: true, scroll: false });
 
+  /* =========================================================
+    COMPACT HEADER
+    ========================================================= */
+
+  var siteHeader =
+      document.querySelector(".site-header");
+
+  var heroTitle =
+      document.getElementById("hero-title");
+
+
+  function updateCompactHeader() {
+
+      if (
+          !siteHeader ||
+          !heroTitle
+      ) {
+          return;
+      }
+
+
+      /*
+      * The header becomes compact once the large
+      * hero title has completely disappeared above
+      * the viewport.
+      */
+
+      var titleRect =
+          heroTitle.getBoundingClientRect();
+
+
+      var shouldCompact =
+          titleRect.bottom <= 0;
+
+
+      siteHeader.classList.toggle(
+          "is-compact",
+          shouldCompact
+      );
+
+  }
+
+
+  window.addEventListener(
+      "scroll",
+      updateCompactHeader,
+      {
+          passive: true
+      }
+  );
+
+
+  /*
+  * Set the correct initial state immediately.
+  */
+
+  updateCompactHeader();
+
+
+  /* =========================================================
+    AUTO-HIDING SCROLLBAR
+    ========================================================= */
+
   var scrollHideTimeout;
-  window.addEventListener("scroll", function () {
-    document.documentElement.classList.add("is-scrolling");
-    window.clearTimeout(scrollHideTimeout);
-    scrollHideTimeout = window.setTimeout(function () {
-      document.documentElement.classList.remove("is-scrolling");
-    }, 650);
-  }, { passive: true });
+
+  window.addEventListener(
+      "scroll",
+      function () {
+
+          document.documentElement.classList.add(
+              "is-scrolling"
+          );
+
+
+          window.clearTimeout(
+              scrollHideTimeout
+          );
+
+
+          scrollHideTimeout =
+              window.setTimeout(
+                  function () {
+
+                      document.documentElement.classList.remove(
+                          "is-scrolling"
+                      );
+
+                  },
+                  650
+              );
+
+      },
+      {
+          passive: true
+      }
+  );
 })();

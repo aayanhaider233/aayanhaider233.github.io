@@ -31,13 +31,130 @@ html.is-scrolling ::-webkit-scrollbar-thumb { background: var(--olive); }
 .section-heading { margin-bottom: 55px; }
 .section-heading h2, .section-intro h2, .research-statement h2, .selected-work h2, .academic-snapshot h2 { color: var(--ink); font-size: clamp(2rem, 4vw, 3rem); font-weight: 400; line-height: 1.18; letter-spacing: -.035em; }
 
-.site-header { position: sticky; top: 0; z-index: 100; background: rgba(232,229,221,.88); border-bottom: 1px solid var(--border); backdrop-filter: blur(14px); }
-.nav-container { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
-.site-name { color: var(--olive); font-size: 1.08rem; font-weight: 600; white-space: nowrap; }
-.nav { display: flex; align-items: center; gap: 4px; }
-.tab { padding: 9px 14px; color: var(--muted); font-size: .77rem; font-weight: 500; border-radius: 20px; opacity: .55; transition: opacity .2s ease, color .2s ease; }
-.tab:hover { opacity: .9; color: var(--olive); }
-.tab.is-active { color: var(--olive); font-weight: 600; opacity: 1; }
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    background: rgba(232,229,221,.88);
+
+    /*
+     * No visible divider initially.
+     */
+    border-bottom: 1px solid transparent;
+
+    backdrop-filter: blur(14px);
+
+    transition:
+        border-color .45s ease;
+}
+
+
+.nav-container {
+    min-height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav {
+    width: 30%;
+
+    display: grid;
+
+    grid-template-columns:
+        auto
+        auto
+        auto
+        auto
+        auto;
+
+    align-items: center;
+    column-gap: 20px;
+}
+
+.tab {
+    padding: 9px 14px;
+
+    color: var(--muted);
+
+    font-size: .77rem;
+    font-weight: 500;
+
+    border-radius: 20px;
+
+    opacity: .55;
+
+    transition:
+        opacity .2s ease,
+        color .2s ease;
+}
+
+
+.tab:hover {
+    opacity: .9;
+    color: var(--olive);
+}
+
+
+.tab.is-active {
+    color: var(--olive);
+    font-weight: 600;
+    opacity: 1;
+}
+
+
+/*
+ * Aayan Haider in the centre of the compact header.
+ *
+ * It occupies its own grid column, so the tabs
+ * naturally move around it.
+ */
+
+.site-name {
+    grid-column: 3;
+
+    justify-self: center;
+
+    color: var(--olive);
+
+    font-size: 1.08rem;
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    /*
+     * Invisible at the top of the page.
+     */
+    opacity: 0;
+
+    transform: translateY(-8px);
+
+    pointer-events: none;
+
+    transition:
+        opacity .45s ease,
+        transform .45s ease;
+}
+
+
+/*
+ * Compact/scrolled header.
+ */
+
+.site-header.is-compact {
+    border-bottom-color: var(--border);
+}
+
+
+.site-header.is-compact .site-name {
+    opacity: 1;
+
+    transform: translateY(0);
+
+    pointer-events: auto;
+}
 
 .panels { padding: 72px 0 110px; }
 .tabpanel { display: none; opacity: 1; transition: opacity .15s ease; }
