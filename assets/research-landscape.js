@@ -770,6 +770,8 @@
 
             dragging: false,
 
+            isHovered: false,
+
             pointerDownPosition: null,
 
             vx: 0,
@@ -2055,6 +2057,18 @@
                     item.dragging =
                         false;
 
+                    clearObscured();
+
+                    if (
+                        item.isHovered
+                    ) {
+
+                        showHover(
+                            item
+                        );
+
+                    }
+
                 }
             );
 
@@ -2372,7 +2386,7 @@
 
 
         updatePositions();
-
+}
 
 function forceLoop() {
 
@@ -2404,7 +2418,6 @@ function forceLoop() {
 
 forceLoop();
 
-}
     /* =========================================================
        UPDATE
        ========================================================= */
