@@ -34,14 +34,6 @@ var RESEARCH_LANDSCAPE_FORCE = {
 
     minDistance: 55,
 
-    /*
-     * How strongly nodes are pulled back toward
-     * their manually designed positions.
-     *
-     * This is what preserves the landscape.
-     */
-
-    layoutStrength: 0.004,
 
     /*
      * Number of physics steps per animation frame.

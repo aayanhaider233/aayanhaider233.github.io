@@ -865,30 +865,6 @@
                     position.y - 25
             },
 
-            {
-                x:
-                    position.x + 45,
-
-                y:
-                    position.y
-            },
-
-            {
-                x:
-                    position.x - 45,
-
-                y:
-                    position.y
-            },
-
-            {
-                x:
-                    position.x,
-
-                y:
-                    position.y + 23
-            }
-
         ];
 
 
@@ -2418,74 +2394,6 @@ function applyEdgeAttraction() {
  * you designed in research-landscape-data.js.
  */
 
-function applyLayoutRestoration() {
-
-    var config =
-        RESEARCH_LANDSCAPE_FORCE;
-
-
-    nodeElements.forEach(
-        function (item) {
-
-            if (
-                item.dragging
-            ) {
-
-                return;
-
-            }
-
-
-            if (
-                typeof item.originalX !==
-                "number" ||
-                typeof item.originalY !==
-                "number"
-            ) {
-
-                return;
-
-            }
-
-
-            var position =
-                getPosition(
-                    item.data
-                );
-
-
-            var originalX =
-                item.originalX /
-                100 *
-                SVG_WIDTH;
-
-            var originalY =
-                item.originalY /
-                100 *
-                SVG_HEIGHT;
-
-
-            item.vx +=
-                (
-                    originalX -
-                    position.x
-                ) *
-                config.layoutStrength;
-
-
-            item.vy +=
-                (
-                    originalY -
-                    position.y
-                ) *
-                config.layoutStrength;
-
-        }
-    );
-
-}
-
-
 /*
  * Calculate and apply one simulation step.
  */
@@ -2499,9 +2407,6 @@ function updateForceSimulation() {
     applyNodeRepulsion();
 
     applyEdgeAttraction();
-
-    applyLayoutRestoration();
-
 
     var totalMovement =
         0;
@@ -2777,25 +2682,6 @@ function forceLoop() {
 
 }
 
-
-/*
- * Store the manually designed positions.
- *
- * These become the anchor positions that prevent the
- * simulation from reorganising the whole landscape.
- */
-
-nodeElements.forEach(
-    function (item) {
-
-        item.originalX =
-            item.data.x;
-
-        item.originalY =
-            item.data.y;
-
-    }
-);
 
 
 /*
