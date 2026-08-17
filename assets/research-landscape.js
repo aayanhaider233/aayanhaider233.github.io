@@ -1425,194 +1425,165 @@
 
 
     function dimBehindLabel(
-        item
+    item
+) {
+
+    clearObscured();
+
+
+    /*
+     * Build separate obstruction boxes for each
+     * piece of visible text.
+     *
+     * Do NOT merge the label and project hint into
+     * one large rectangle.
+     */
+    var textBoxes = [];
+
+
+    /*
+     * Interest label.
+     */
+    if (
+        item.label &&
+        item.label.textContent.trim() !== ""
     ) {
 
-        clearObscured();
-
-
-        var box =
-            item.label.getBBox();
-
-
-        var padding = 0;
-
-
-        var labelBox = {
-
-            x:
-                box.x -
-                padding,
-
-            y:
-                box.y -
-                padding,
-
-            width:
-                box.width +
-                padding * 2,
-
-            height:
-                box.height +
-                padding * 2
-
-        };
-
-
-        /*
-         * Include project instruction.
-         */
-
-        if (
-            item.projectHint
-        ) {
-
-            var hintBox =
-                item.projectHint.getBBox();
-
-
-            var left =
-                Math.min(
-                    labelBox.x,
-                    hintBox.x -
-                    padding
-                );
-
-
-            var top =
-                Math.min(
-                    labelBox.y,
-                    hintBox.y -
-                    padding
-                );
-
-
-            var right =
-                Math.max(
-                    labelBox.x +
-                    labelBox.width,
-
-                    hintBox.x +
-                    hintBox.width +
-                    padding
-                );
-
-
-            var bottom =
-                Math.max(
-                    labelBox.y +
-                    labelBox.height,
-
-                    hintBox.y +
-                    hintBox.height +
-                    padding
-                );
-
-
-            labelBox = {
-
-                x:
-                    left,
-
-                y:
-                    top,
-
-                width:
-                    right -
-                    left,
-
-                height:
-                    bottom -
-                    top
-
-            };
-
-        }
-
-
-        /*
-         * Dim nodes beneath label.
-         */
-
-        nodeElements.forEach(
-            function (other) {
-
-                if (
-                    other === item
-                ) {
-                    return;
-                }
-
-
-                var position =
-                    getPosition(
-                        other.data
-                    );
-
-
-                if (
-                    pointInsideBox(
-                        position.x,
-                        position.y,
-                        labelBox
-                    )
-                ) {
-
-                    other.group.classList.add(
-                        "is-obscured"
-                    );
-
-                }
-
-            }
-        );
-
-
-        /*
-         * Dim edges beneath label.
-         */
-
-        edgeElements.forEach(
-            function (edge) {
-
-                var source =
-                    getPosition(
-                        nodeMap[
-                            edge.data.source
-                        ]
-                    );
-
-
-                var target =
-                    getPosition(
-                        nodeMap[
-                            edge.data.target
-                        ]
-                    );
-
-
-                if (
-                    lineIntersectsBox(
-                        source.x,
-                        source.y,
-
-                        target.x,
-                        target.y,
-
-                        labelBox
-                    )
-                ) {
-
-                    edge.element.classList.add(
-                        "is-obscured"
-                    );
-
-                }
-
-            }
+        textBoxes.push(
+            item.label.getBBox()
         );
 
     }
+
+
+    /*
+     * Project instruction.
+     */
+    if (
+        item.projectHint &&
+        item.projectHint.textContent.trim() !== ""
+    ) {
+
+        textBoxes.push(
+            item.projectHint.getBBox()
+        );
+
+    }
+
+
+    /*
+     * Nothing visible to test.
+     */
+    if (
+        textBoxes.length === 0
+    ) {
+        return;
+    }
+
+
+    /* =====================================================
+       NODES
+       ===================================================== */
+
+    nodeElements.forEach(
+        function (other) {
+
+            if (
+                other === item
+            ) {
+                return;
+            }
+
+
+            var position =
+                getPosition(
+                    other.data
+                );
+
+
+            var overlaps =
+                textBoxes.some(
+                    function (box) {
+
+                        return pointInsideBox(
+                            position.x,
+                            position.y,
+                            box
+                        );
+
+                    }
+                );
+
+
+            if (
+                overlaps
+            ) {
+
+                other.group.classList.add(
+                    "is-obscured"
+                );
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       EDGES
+       ===================================================== */
+
+    edgeElements.forEach(
+        function (edge) {
+
+            var source =
+                getPosition(
+                    nodeMap[
+                        edge.data.source
+                    ]
+                );
+
+
+            var target =
+                getPosition(
+                    nodeMap[
+                        edge.data.target
+                    ]
+                );
+
+
+            var overlaps =
+                textBoxes.some(
+                    function (box) {
+
+                        return lineIntersectsBox(
+                            source.x,
+                            source.y,
+
+                            target.x,
+                            target.y,
+
+                            box
+                        );
+
+                    }
+                );
+
+
+            if (
+                overlaps
+            ) {
+
+                edge.element.classList.add(
+                    "is-obscured"
+                );
+
+            }
+
+        }
+    );
+
+}
 
 
     /* =========================================================
