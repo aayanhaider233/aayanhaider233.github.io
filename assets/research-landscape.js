@@ -2031,6 +2031,8 @@
                     item.dragging =
                         false;
 
+                    startForceSimulation();
+
                     clearObscured();
 
                     if (
@@ -2077,331 +2079,691 @@
 
 
     /* =========================================================
-        FORCE SIMULATION
-        ========================================================= */
+        /* =========================================================
+   FORCE SIMULATION
+   ========================================================= */
 
-        var forceAnimation = null;
+var forceAnimation = null;
 
-
-        function applyForces() {
-
-            var config =
-                RESEARCH_LANDSCAPE_FORCE;
+var forceRunning = false;
 
 
-            /*
-            * REPULSION
-            */
+/*
+ * Small movement threshold.
+ *
+ * Once the total movement of the graph falls below this
+ * value for several consecutive frames, the simulation
+ * stops.
+ */
 
-            nodeElements.forEach(function (a) {
+var FORCE_SETTLE_THRESHOLD = 0.08;
 
-                nodeElements.forEach(function (b) {
+var FORCE_SETTLE_FRAMES = 12;
 
-                    if (a === b) {
-                        return;
-                    }
-
-
-                    var ax =
-                        getPosition(a.data);
-
-                    var bx =
-                        getPosition(b.data);
+var forceStableFrames = 0;
 
 
-                    var dx =
-                        ax.x - bx.x;
+/*
+ * Find the node element corresponding to a data node.
+ */
 
-                    var dy =
-                        ax.y - bx.y;
+function getNodeElement(nodeId) {
 
+    return nodeElements.find(
+        function (item) {
 
-                    var distance =
-                        Math.hypot(dx, dy);
+            return (
+                item.data.id ===
+                nodeId
+            );
 
+        }
+    );
 
-                    if (distance < 0.001) {
-                        distance = 0.001;
-                    }
-
-
-                    /*
-                    * Minimum separation.
-                    */
-
-                    if (
-                        distance <
-                        config.minDistance
-                    ) {
-
-                        var force =
-                            config.repulsion /
-                            (
-                                distance *
-                                distance
-                            );
+}
 
 
-                        a.vx +=
-                            (
-                                dx /
-                                distance
-                            ) *
-                            force;
+/*
+ * Apply a small repulsive force between nodes.
+ *
+ * This is deliberately local rather than a strong
+ * inverse-square force across the entire graph.
+ *
+ * The purpose is to prevent nodes from bunching,
+ * not to reorganise the entire landscape.
+ */
 
-                        a.vy +=
-                            (
-                                dy /
-                                distance
-                            ) *
-                            force;
+function applyNodeRepulsion() {
 
-                    }
+    var config =
+        RESEARCH_LANDSCAPE_FORCE;
 
-                });
 
-            });
+    for (
+        var i = 0;
+        i < nodeElements.length;
+        i++
+    ) {
+
+        for (
+            var j = i + 1;
+            j < nodeElements.length;
+            j++
+        ) {
+
+            var a =
+                nodeElements[i];
+
+            var b =
+                nodeElements[j];
 
 
             /*
-            * EDGE ATTRACTION
-            */
+             * Do not apply forces to a node being dragged.
+             */
 
-            edges.forEach(function (edge) {
+            if (
+                a.dragging ||
+                b.dragging
+            ) {
 
-                var source =
-                    nodeElements.find(
-                        function (item) {
+                continue;
 
-                            return (
-                                item.data.id ===
-                                edge.source
-                            );
-
-                        }
-                    );
+            }
 
 
-                var target =
-                    nodeElements.find(
-                        function (item) {
+            var aPosition =
+                getPosition(
+                    a.data
+                );
 
-                            return (
-                                item.data.id ===
-                                edge.target
-                            );
-
-                        }
-                    );
+            var bPosition =
+                getPosition(
+                    b.data
+                );
 
 
-                if (!source || !target) {
-                    return;
-                }
+            var dx =
+                aPosition.x -
+                bPosition.x;
+
+            var dy =
+                aPosition.y -
+                bPosition.y;
 
 
-                var sourcePosition =
-                    getPosition(
-                        source.data
-                    );
-
-                var targetPosition =
-                    getPosition(
-                        target.data
-                    );
+            var distance =
+                Math.hypot(
+                    dx,
+                    dy
+                );
 
 
-                var dx =
-                    targetPosition.x -
-                    sourcePosition.x;
+            if (
+                distance < 0.001
+            ) {
 
-                var dy =
-                    targetPosition.y -
-                    sourcePosition.y;
+                distance = 0.001;
 
-
-                var distance =
-                    Math.hypot(dx, dy);
-
-
-                if (distance < 0.001) {
-                    return;
-                }
-
-
-                var difference =
-                    distance -
-                    config.idealEdgeLength;
-
-
-                var force =
-                    difference *
-                    config.attraction;
-
-
-                var fx =
-                    (
-                        dx /
-                        distance
-                    ) *
-                    force;
-
-
-                var fy =
-                    (
-                        dy /
-                        distance
-                    ) *
-                    force;
-
-
-                source.vx += fx;
-                source.vy += fy;
-
-                target.vx -= fx;
-                target.vy -= fy;
-
-            });
+            }
 
 
             /*
-            * CENTRE GRAVITY
-            */
+             * Only repel nodes that are genuinely close.
+             *
+             * This preserves the initial layout.
+             */
 
-            nodeElements.forEach(function (item) {
+            if (
+                distance >=
+                config.minDistance
+            ) {
 
-                if (item.dragging) {
-                    return;
-                }
+                continue;
 
-
-                var position =
-                    getPosition(
-                        item.data
-                    );
-
-
-                var centreX =
-                    SVG_WIDTH / 2;
-
-                var centreY =
-                    SVG_HEIGHT / 2;
+            }
 
 
-                item.vx +=
-                    (
-                        centreX -
-                        position.x
-                    ) *
-                    config.centerStrength;
+            var strength =
+                (
+                    config.minDistance -
+                    distance
+                ) /
+                config.minDistance;
 
 
-                item.vy +=
-                    (
-                        centreY -
-                        position.y
-                    ) *
-                    config.centerStrength;
+            strength *=
+                config.repulsion;
 
-            });
+
+            var ux =
+                dx /
+                distance;
+
+            var uy =
+                dy /
+                distance;
+
+
+            a.vx +=
+                ux *
+                strength;
+
+            a.vy +=
+                uy *
+                strength;
+
+
+            b.vx -=
+                ux *
+                strength;
+
+            b.vy -=
+                uy *
+                strength;
 
         }
 
-        function updateForceSimulation() {
+    }
 
-            var config =
-                RESEARCH_LANDSCAPE_FORCE;
-
-
-            applyForces();
-
-
-            nodeElements.forEach(function (item) {
-
-                if (item.dragging) {
-
-                    item.vx = 0;
-                    item.vy = 0;
-
-                    return;
-
-                }
-
-
-                item.vx *=
-                    config.damping;
-
-                item.vy *=
-                    config.damping;
-
-
-                var position =
-                    getPosition(
-                        item.data
-                    );
-
-
-                var newX =
-                    position.x +
-                    item.vx;
-
-
-                var newY =
-                    position.y +
-                    item.vy;
-
-
-                /*
-                * Keep nodes inside the graph.
-                */
-
-                newX =
-                    clamp(
-                        newX,
-                        20,
-                        SVG_WIDTH - 20
-                    );
-
-
-                newY =
-                    clamp(
-                        newY,
-                        20,
-                        SVG_HEIGHT - 20
-                    );
-
-
-                item.data.x =
-                    newX /
-                    SVG_WIDTH *
-                    100;
-
-
-                item.data.y =
-                    newY /
-                    SVG_HEIGHT *
-                    100;
-
-            });
-
-
-        updatePositions();
 }
+
+
+/*
+ * Apply attraction only along existing edges.
+ *
+ * The force is deliberately weak so that connected
+ * nodes move toward one another without destroying
+ * the manually designed landscape.
+ */
+
+function applyEdgeAttraction() {
+
+    var config =
+        RESEARCH_LANDSCAPE_FORCE;
+
+
+    edges.forEach(
+        function (edge) {
+
+            var source =
+                getNodeElement(
+                    edge.source
+                );
+
+            var target =
+                getNodeElement(
+                    edge.target
+                );
+
+
+            if (
+                !source ||
+                !target ||
+                source.dragging ||
+                target.dragging
+            ) {
+
+                return;
+
+            }
+
+
+            var sourcePosition =
+                getPosition(
+                    source.data
+                );
+
+            var targetPosition =
+                getPosition(
+                    target.data
+                );
+
+
+            var dx =
+                targetPosition.x -
+                sourcePosition.x;
+
+            var dy =
+                targetPosition.y -
+                sourcePosition.y;
+
+
+            var distance =
+                Math.hypot(
+                    dx,
+                    dy
+                );
+
+
+            if (
+                distance < 0.001
+            ) {
+
+                return;
+
+            }
+
+
+            /*
+             * Only correct a portion of the distance error.
+             *
+             * This is what prevents the graph from collapsing
+             * into a tight cluster.
+             */
+
+            var difference =
+                distance -
+                config.idealEdgeLength;
+
+
+            var force =
+                difference *
+                config.attraction;
+
+
+            /*
+             * Limit the force so one edge can never
+             * dramatically move a node.
+             */
+
+            force =
+                clamp(
+                    force,
+                    -1.5,
+                    1.5
+                );
+
+
+            var ux =
+                dx /
+                distance;
+
+            var uy =
+                dy /
+                distance;
+
+
+            source.vx +=
+                ux *
+                force;
+
+            source.vy +=
+                uy *
+                force;
+
+
+            target.vx -=
+                ux *
+                force;
+
+            target.vy -=
+                uy *
+                force;
+
+        }
+    );
+
+}
+
+
+/*
+ * Apply a very weak restoring force toward the node's
+ * ORIGINAL position.
+ *
+ * This is the important part for your landscape.
+ *
+ * The graph is allowed to behave like a force graph,
+ * but it cannot wander arbitrarily far from the layout
+ * you designed in research-landscape-data.js.
+ */
+
+function applyLayoutRestoration() {
+
+    var config =
+        RESEARCH_LANDSCAPE_FORCE;
+
+
+    nodeElements.forEach(
+        function (item) {
+
+            if (
+                item.dragging
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                typeof item.originalX !==
+                "number" ||
+                typeof item.originalY !==
+                "number"
+            ) {
+
+                return;
+
+            }
+
+
+            var position =
+                getPosition(
+                    item.data
+                );
+
+
+            var originalX =
+                item.originalX /
+                100 *
+                SVG_WIDTH;
+
+            var originalY =
+                item.originalY /
+                100 *
+                SVG_HEIGHT;
+
+
+            item.vx +=
+                (
+                    originalX -
+                    position.x
+                ) *
+                config.layoutStrength;
+
+
+            item.vy +=
+                (
+                    originalY -
+                    position.y
+                ) *
+                config.layoutStrength;
+
+        }
+    );
+
+}
+
+
+/*
+ * Calculate and apply one simulation step.
+ */
+
+function updateForceSimulation() {
+
+    var config =
+        RESEARCH_LANDSCAPE_FORCE;
+
+
+    applyNodeRepulsion();
+
+    applyEdgeAttraction();
+
+    applyLayoutRestoration();
+
+
+    var totalMovement =
+        0;
+
+
+    nodeElements.forEach(
+        function (item) {
+
+            if (
+                item.dragging
+            ) {
+
+                item.vx = 0;
+                item.vy = 0;
+
+                return;
+
+            }
+
+
+            /*
+             * Damping removes momentum.
+             */
+
+            item.vx *=
+                config.damping;
+
+            item.vy *=
+                config.damping;
+
+
+            /*
+             * Limit velocity.
+             *
+             * This prevents a collision from suddenly
+             * throwing a node across the landscape.
+             */
+
+            item.vx =
+                clamp(
+                    item.vx,
+                    -2,
+                    2
+                );
+
+            item.vy =
+                clamp(
+                    item.vy,
+                    -2,
+                    2
+                );
+
+
+            var movement =
+                Math.hypot(
+                    item.vx,
+                    item.vy
+                );
+
+
+            totalMovement +=
+                movement;
+
+
+            var position =
+                getPosition(
+                    item.data
+                );
+
+
+            var newX =
+                position.x +
+                item.vx;
+
+            var newY =
+                position.y +
+                item.vy;
+
+
+            /*
+             * Keep nodes inside the landscape.
+             */
+
+            newX =
+                clamp(
+                    newX,
+                    20,
+                    SVG_WIDTH - 20
+                );
+
+            newY =
+                clamp(
+                    newY,
+                    20,
+                    SVG_HEIGHT - 20
+                );
+
+
+            item.data.x =
+                newX /
+                SVG_WIDTH *
+                100;
+
+            item.data.y =
+                newY /
+                SVG_HEIGHT *
+                100;
+
+        }
+    );
+
+
+    updatePositions();
+
+
+    /*
+     * Determine whether the graph has settled.
+     */
+
+    if (
+        totalMovement <
+        FORCE_SETTLE_THRESHOLD
+    ) {
+
+        forceStableFrames++;
+
+    } else {
+
+        forceStableFrames = 0;
+
+    }
+
+
+    if (
+        forceStableFrames >=
+        FORCE_SETTLE_FRAMES
+    ) {
+
+        stopForceSimulation();
+
+    }
+
+}
+
+
+/*
+ * Start the simulation.
+ */
+
+function startForceSimulation() {
+
+    if (
+        !RESEARCH_LANDSCAPE_FORCE.enabled
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        forceRunning
+    ) {
+
+        return;
+
+    }
+
+
+    forceRunning =
+        true;
+
+    forceStableFrames =
+        0;
+
+
+    forceAnimation =
+        requestAnimationFrame(
+            forceLoop
+        );
+
+}
+
+
+/*
+ * Stop the simulation once the graph has settled.
+ */
+
+function stopForceSimulation() {
+
+    forceRunning =
+        false;
+
+
+    forceStableFrames =
+        0;
+
+
+    if (
+        forceAnimation !== null
+    ) {
+
+        cancelAnimationFrame(
+            forceAnimation
+        );
+
+        forceAnimation =
+            null;
+
+    }
+
+
+    /*
+     * Remove any tiny residual velocity.
+     */
+
+    nodeElements.forEach(
+        function (item) {
+
+            item.vx = 0;
+            item.vy = 0;
+
+        }
+    );
+
+}
+
+
+/*
+ * Animation loop.
+ */
 
 function forceLoop() {
 
     if (
-        RESEARCH_LANDSCAPE_FORCE.enabled
+        !forceRunning
     ) {
 
-        for (
-            var i = 0;
-            i <
-            RESEARCH_LANDSCAPE_FORCE.iterationsPerFrame;
-            i++
+        return;
+
+    }
+
+
+    var iterations =
+        RESEARCH_LANDSCAPE_FORCE
+            .iterationsPerFrame;
+
+
+    for (
+        var i = 0;
+        i < iterations;
+        i++
+    ) {
+
+        updateForceSimulation();
+
+
+        if (
+            !forceRunning
         ) {
 
-            updateForceSimulation();
+            return;
 
         }
 
@@ -2416,7 +2778,43 @@ function forceLoop() {
 }
 
 
-forceLoop();
+/*
+ * Store the manually designed positions.
+ *
+ * These become the anchor positions that prevent the
+ * simulation from reorganising the whole landscape.
+ */
+
+nodeElements.forEach(
+    function (item) {
+
+        item.originalX =
+            item.data.x;
+
+        item.originalY =
+            item.data.y;
+
+    }
+);
+
+
+/*
+ * Initial rendering.
+ *
+ * IMPORTANT:
+ * Do this before starting the simulation so the
+ * graph initially appears exactly where the data file
+ * specifies it.
+ */
+
+updatePositions();
+
+
+/*
+ * Start gently.
+ */
+
+startForceSimulation();
 
     /* =========================================================
        UPDATE

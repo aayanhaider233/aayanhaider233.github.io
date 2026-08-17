@@ -2,18 +2,51 @@ var RESEARCH_LANDSCAPE_FORCE = {
 
     enabled: true,
 
-    repulsion: 1800,
+    /*
+     * How strongly nearby nodes repel one another.
+     */
 
-    attraction: 0.015,
+    repulsion: 0.55,
+
+    /*
+     * How strongly connected nodes move toward
+     * their preferred edge length.
+     */
+
+    attraction: 0.008,
+
+    /*
+     * Preferred distance between connected nodes.
+     */
 
     idealEdgeLength: 150,
 
-    damping: 0.85,
+    /*
+     * Higher = more momentum.
+     * Lower = settles faster.
+     */
 
-    minDistance: 70,
+    damping: 0.72,
 
-    centerStrength: 0.002,
+    /*
+     * Nodes only repel one another inside this distance.
+     */
 
-    iterationsPerFrame: 2
+    minDistance: 55,
+
+    /*
+     * How strongly nodes are pulled back toward
+     * their manually designed positions.
+     *
+     * This is what preserves the landscape.
+     */
+
+    layoutStrength: 0.004,
+
+    /*
+     * Number of physics steps per animation frame.
+     */
+
+    iterationsPerFrame: 1
 
 };
