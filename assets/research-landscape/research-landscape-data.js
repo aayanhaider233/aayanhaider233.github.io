@@ -1,21 +1,3 @@
-/*
- * ============================================================
- * RESEARCH LANDSCAPE — DATA
- * ============================================================
- *
- * Node types:
- *
- * exploring   = filled circle
- * emerging    = hollow circle
- * unpublished = hollow diamond
- * published   = filled diamond
- *
- * x / y = initial position as percentages.
- *
- * Edit this file when adding/removing/repositioning nodes.
- * ============================================================
- */
-
 const RESEARCH_LANDSCAPE = {
 
     nodes: [
@@ -122,12 +104,17 @@ const RESEARCH_LANDSCAPE = {
            ---------------------------------------------------- */
 
         {
-            id: "thesis",
-            name: "Thesis",
-            type: "unpublished",
+            id: "causal-ml-bioinformatics-ml",
+            name: "Intersecting Works",
+            type: "work",
+            fields: [
+                "Machine Learning",
+                "Causal ML",
+                "Bioinformatics"
+            ],
             x: 48,
             y: 47
-        },
+        }
 
     ],
 
@@ -155,17 +142,17 @@ const RESEARCH_LANDSCAPE = {
 
         {
             source: "causal-ml",
-            target: "thesis"
+            target: "causal-ml-bioinformatics-ml"
         },
 
         {
             source: "machine-learning",
-            target: "thesis"
+            target: "causal-ml-bioinformatics-ml"
         },
 
         {
             source: "bioinformatics",
-            target: "thesis"
+            target: "causal-ml-bioinformatics-ml"
         }
 
     ]

@@ -183,12 +183,9 @@
     }
 
 
-    function isProject(node) {
+    function isWorkNode(node) {
 
-        return (
-            node.type === "unpublished" ||
-            node.type === "published"
-        );
+        return node.type === "work";
 
     }
 
@@ -500,7 +497,7 @@
 
 
         if (
-            isProject(node)
+            isWorkNode(node)
         ) {
 
             group.classList.add(
@@ -518,7 +515,7 @@
 
 
         if (
-            isProject(node)
+            isWorkNode(node)
         ) {
 
             /*
@@ -578,7 +575,7 @@
 
 
         if (
-            isProject(node)
+            isWorkNode(node)
         ) {
 
             hoverShape =
@@ -690,7 +687,7 @@
          */
 
         if (
-            !isProject(node)
+            !isWorkNode(node)
         ) {
 
             label.textContent =
@@ -717,7 +714,7 @@
 
 
         if (
-            isProject(node)
+            isWorkNode(node)
         ) {
 
             projectHint =
@@ -1984,7 +1981,7 @@
 
                     if (
                         !item.dragging &&
-                        isProject(item.data)
+                        isWorkNode(item.data)
                     ) {
 
                         var projectsTab =
@@ -1992,10 +1989,10 @@
                                 "tab-projects"
                             );
 
+                        if (projectsTab) {
 
-                        if (
-                            projectsTab
-                        ) {
+                            window.projectLandscapeFields =
+                                item.data.fields || [];
 
                             projectsTab.click();
 
