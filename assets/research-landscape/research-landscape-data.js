@@ -53,6 +53,13 @@ const RESEARCH_LANDSCAPE = {
             y: 67
         },
 
+        {
+            id: "xai",
+            name: "Explainable AI",
+            type: "exploring",
+            x: 40,
+            y: 75
+        },
 
         /* ----------------------------------------------------
            EMERGING INTERESTS
@@ -100,17 +107,18 @@ const RESEARCH_LANDSCAPE = {
 
 
         /* ----------------------------------------------------
-           UNPUBLISHED WORK
+           INTERSECTING WORK
            ---------------------------------------------------- */
 
         {
-            id: "causal-ml-bioinformatics-ml",
+            id: "causal-ml-bioinformatics-ml-xai",
             name: "Intersecting Works",
             type: "work",
             fields: [
                 "Machine Learning",
                 "Causal ML",
-                "Bioinformatics"
+                "Bioinformatics",
+                "Explainable AI"
             ],
             x: 48,
             y: 47
@@ -156,23 +164,28 @@ const RESEARCH_LANDSCAPE = {
             target: "procedural-generation"
         },
 
-        /* Causal ML + ML + Bioinformatics */
+        /* Causal ML + ML + Bioinformatics + XAI */
         
         {
             source: "causal-ml",
-            target: "causal-ml-bioinformatics-ml"
+            target: "causal-ml-bioinformatics-ml-xai"
         },
         
         {
             source: "machine-learning",
-            target: "causal-ml-bioinformatics-ml"
+            target: "causal-ml-bioinformatics-ml-xai"
         },
         
         {
             source: "bioinformatics",
-            target: "causal-ml-bioinformatics-ml"
+            target: "causal-ml-bioinformatics-ml-xai"
         },
         
+        {
+            source: "xai",
+            target: "causal-ml-bioinformatics-ml-xai"
+        },
+
         /* CG + Animation */
 
         {

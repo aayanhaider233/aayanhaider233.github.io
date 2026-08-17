@@ -9,7 +9,8 @@ var PROJECTS = [
         fields: [
             "Machine Learning",
             "Causal ML",
-            "Bioinformatics"
+            "Bioinformatics",
+            "Explainable AI",
         ],
 
         tools: [

@@ -174,21 +174,40 @@ html.is-scrolling ::-webkit-scrollbar-thumb { background: var(--olive); }
 }
 
 
-.panels { padding: 72px 0 110px; }
+.panels { padding: 25px 0 110px; }
 .tabpanel { display: none; opacity: 1; transition: opacity .15s ease; }
 .tabpanel.is-active { display: block; }
 .tabpanel.is-fading { opacity: 0; }
 
-.hero-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .7fr); align-items: center; gap: 90px; min-height: 620px; padding: 30px 0 95px; }
+.hero-grid {
+    display: grid;
+    grid-template-columns: 360px minmax(0, 600px);
+    align-items: center;
+    gap: 50px;
+
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+
+    min-height: 620px;
+    padding: 30px 0 95px;
+}
 .hero-content h1 { color: var(--ink); font-size: clamp(3.2rem, 7vw, 6.1rem); font-weight: 400; letter-spacing: -.065em; line-height: .94; white-space: nowrap; margin-bottom: 30px; }
 .hero-description { max-width: 650px; color: var(--muted); font-size: 1rem; line-height: 1.85; }
 .social-links { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 27px; }
 .social-links a { color: var(--muted); font-size: .74rem; border-bottom: 1px solid transparent; transition: color .2s ease, border-color .2s ease; }
 .social-links a:hover { color: var(--olive); border-color: var(--olive); }
+.hero-photo {
+    width: min(100%, 380px);
+    justify-self: start;
+}
 
-.profile-card { width: min(100%, 330px); justify-self: end; padding: 32px; background: rgba(245,243,237,.34); border: 1px solid rgba(42,55,35,.14); border-radius: 16px; box-shadow: 0 24px 65px rgba(12,10,8,.055); }
-.profile-photo { width: 136px; height: 136px; margin-bottom: 30px; border-radius: 50%; overflow: hidden; background: var(--sage); }
-.profile-photo img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.hero-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
 .profile-section { padding-top: 22px; border-top: 1px solid rgba(42,55,35,.16); }
 .profile-label { display: block; margin-bottom: 7px; color: var(--muted); font-size: .63rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
 .profile-section p { color: var(--ink); font-size: .94rem; line-height: 1.55; }
