@@ -29,7 +29,7 @@
 
     right: 0;
 
-    z-index: 20;
+    z-index: 30;
 
     display: flex;
 
@@ -75,9 +75,7 @@
 
     transition:
         opacity 180ms ease,
-
         color 180ms ease,
-
         transform 180ms ease;
 
 }
@@ -106,16 +104,13 @@
 
     transition:
         opacity 180ms ease,
-
         transform 180ms ease;
 
 }
 
 
 .research-field-tag:hover,
-
 .research-field-tag.is-highlighted,
-
 .research-field-tag.is-intersection-field {
 
     opacity: 1;
@@ -126,9 +121,7 @@
 
 
 .research-field-tag:hover::after,
-
 .research-field-tag.is-highlighted::after,
-
 .research-field-tag.is-intersection-field::after {
 
     opacity: 0.7;
@@ -185,9 +178,7 @@
 
     transition:
         opacity 350ms ease,
-
         stroke-opacity 300ms ease,
-
         stroke-width 300ms ease;
 
 }
@@ -235,13 +226,98 @@
 
 
 /*
- * Participating contours are visually removed
- * while their temporary strings take over.
+ * The participating passive contour fades
+ * while its corresponding animated string
+ * takes over.
  */
 
 .research-contour.is-detaching {
 
     opacity: 0;
+
+}
+
+
+/* ==================================================
+   STRING LAYER
+   ================================================== */
+
+.research-string-layer {
+
+    pointer-events: none;
+
+}
+
+
+.research-string-group {
+
+    pointer-events: none;
+
+    opacity: 0;
+
+}
+
+
+.research-intersection-string {
+
+    fill: none;
+
+    stroke: var(--olive);
+
+    stroke-width: 1.15;
+
+    stroke-opacity: 0.76;
+
+    vector-effect: non-scaling-stroke;
+
+    pointer-events: none;
+
+    /*
+     * No CSS transform is used here.
+     *
+     * The geometry itself is animated in JS.
+     */
+
+}
+
+
+.research-intersection-string.exploring {
+
+    stroke-dasharray: none;
+
+}
+
+
+.research-intersection-string.emerging {
+
+    stroke-dasharray: 4 4;
+
+    stroke-opacity: 0.55;
+
+}
+
+
+/*
+ * Slight variation between strands.
+ */
+
+.research-intersection-string:nth-child(2) {
+
+    stroke-opacity: 0.62;
+
+}
+
+
+.research-intersection-string:nth-child(3) {
+
+    stroke-opacity: 0.78;
+
+}
+
+
+.research-intersection-string:nth-child(4) {
+
+    stroke-opacity: 0.54;
 
 }
 
@@ -278,11 +354,13 @@
 
     vector-effect: non-scaling-stroke;
 
+    transform-box: fill-box;
+
+    transform-origin: center;
+
     transition:
         fill 220ms ease,
-
         stroke-width 220ms ease,
-
         transform 220ms ease;
 
 }
@@ -333,69 +411,6 @@
 
 
 /* ==================================================
-   STRING-THEORY INTERSECTION STRANDS
-   ================================================== */
-
-.research-string-group {
-
-    pointer-events: none;
-
-}
-
-
-.research-intersection-string {
-
-    fill: none;
-
-    stroke: var(--olive);
-
-    stroke-width: 1.15;
-
-    stroke-opacity: 0.72;
-
-    vector-effect: non-scaling-stroke;
-
-    pointer-events: none;
-
-}
-
-
-.research-intersection-string.emerging {
-
-    stroke-dasharray: 4 4;
-
-    stroke-opacity: 0.55;
-
-}
-
-
-/*
- * Slightly different opacity on individual
- * participating strands gives depth.
- */
-
-.research-intersection-string:nth-child(2) {
-
-    stroke-opacity: 0.62;
-
-}
-
-
-.research-intersection-string:nth-child(3) {
-
-    stroke-opacity: 0.78;
-
-}
-
-
-.research-intersection-string:nth-child(4) {
-
-    stroke-opacity: 0.52;
-
-}
-
-
-/* ==================================================
    WORK COUNT
    ================================================== */
 
@@ -407,7 +422,7 @@
 
     right: 0;
 
-    z-index: 21;
+    z-index: 31;
 
     pointer-events: none;
 
@@ -432,7 +447,6 @@
 
     transition:
         opacity 220ms ease,
-
         transform 220ms ease;
 
 }

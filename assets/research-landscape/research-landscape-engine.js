@@ -72,6 +72,18 @@
     );
 
 
+    var stringLayer =
+        document.createElementNS(
+            NS,
+            "g"
+        );
+
+    stringLayer.setAttribute(
+        "class",
+        "research-string-layer"
+    );
+
+
     var interactionLayer =
         document.createElementNS(
             NS,
@@ -98,6 +110,10 @@
 
     svg.appendChild(
         contourLayer
+    );
+
+    svg.appendChild(
+        stringLayer
     );
 
     svg.appendChild(
@@ -236,8 +252,11 @@
 
             path.setAttribute(
                 "d",
-                createContourPath(
-                    field.path
+                createSmoothPath(
+                    field.path.map(
+                        toSVGPoint
+                    ),
+                    false
                 )
             );
 
@@ -254,11 +273,13 @@
 
 
             contourElements[field.id] = {
+
                 field:
                     field,
 
                 element:
                     path
+
             };
 
         }
@@ -277,6 +298,15 @@
     intersections.forEach(
         function (intersection) {
 
+            var point =
+                toSVGPoint(
+                    [
+                        intersection.x,
+                        intersection.y
+                    ]
+                );
+
+
             var group =
                 document.createElementNS(
                     NS,
@@ -294,15 +324,6 @@
                 intersection.id;
 
 
-            var point =
-                toSVGPoint(
-                    [
-                        intersection.x,
-                        intersection.y
-                    ]
-                );
-
-
             group.setAttribute(
                 "transform",
                 "translate(" +
@@ -314,7 +335,7 @@
 
 
             /*
-             * Invisible hit target.
+             * Hit area.
              */
 
             var hit =
@@ -434,6 +455,7 @@
 
 
             label.textContent =
+                intersection.name ||
                 "Intersecting Works";
 
 
@@ -442,7 +464,18 @@
             );
 
 
-            var intersectionItem = {
+            /*
+             * Persistent string state.
+             */
+
+            var stringState =
+                createStringElements(
+                    intersection,
+                    point
+                );
+
+
+            var item = {
 
                 data:
                     intersection,
@@ -463,26 +496,26 @@
                     hit,
 
                 stringState:
-                    null
+                    stringState
 
             };
 
+
             intersectionElements.push(
-                intersectionItem
+                item
             );
 
-            intersectionItem.stringState =
-                createStringElements(
-                    intersectionItem
-                );
 
+            /*
+             * Hover.
+             */
 
             hit.addEventListener(
                 "mouseenter",
                 function () {
 
                     activateIntersection(
-                        intersection
+                        item
                     );
 
                 }
@@ -493,11 +526,17 @@
                 "mouseleave",
                 function () {
 
-                    deactivateIntersection();
+                    deactivateIntersection(
+                        item
+                    );
 
                 }
             );
 
+
+            /*
+             * Click.
+             */
 
             hit.addEventListener(
                 "click",
@@ -523,7 +562,28 @@
 
     /*
      * ==================================================
-     * CONTOUR PATH GENERATION
+     * WORK COUNT
+     * ==================================================
+     */
+
+    var workCount =
+        document.createElement(
+            "div"
+        );
+
+
+    workCount.className =
+        "research-work-count";
+
+
+    container.appendChild(
+        workCount
+    );
+
+
+    /*
+     * ==================================================
+     * HELPERS
      * ==================================================
      */
 
@@ -548,8 +608,86 @@
     }
 
 
-    function createContourPath(
-        points
+    function clamp(
+        value,
+        min,
+        max
+    ) {
+
+        return Math.max(
+            min,
+            Math.min(
+                max,
+                value
+            )
+        );
+
+    }
+
+
+    function easeInOutCubic(
+        value
+    ) {
+
+        value =
+            clamp(
+                value,
+                0,
+                1
+            );
+
+
+        return value < 0.5
+
+            ? 4 *
+                value *
+                value *
+                value
+
+            : 1 -
+                Math.pow(
+                    -2 *
+                    value +
+                    2,
+                    3
+                ) /
+                2;
+
+    }
+
+
+    function lerp(
+        a,
+        b,
+        amount
+    ) {
+
+        return (
+            a +
+            (
+                b - a
+            ) *
+            amount
+        );
+
+    }
+
+
+    /*
+     * ==================================================
+     * SMOOTH PATH
+     * ==================================================
+     *
+     * Uses quadratic curves through the midpoints
+     * of the supplied points.
+     *
+     * This gives both the passive contours and the
+     * active strings the same visual language.
+     */
+
+    function createSmoothPath(
+        points,
+        closed
     ) {
 
         if (
@@ -560,62 +698,159 @@
         }
 
 
-        var converted =
-            points.map(
-                toSVGPoint
-            );
-
-
-        var d =
-            "M " +
-            converted[0].x +
-            " " +
-            converted[0].y;
-
-
-        for (
-            var i = 1;
-            i < converted.length;
-            i++
+        if (
+            points.length === 1
         ) {
 
+            return (
+                "M " +
+                points[0].x +
+                " " +
+                points[0].y
+            );
+
+        }
+
+
+        var d = "";
+
+
+        if (closed) {
+
             var previous =
-                converted[i - 1];
+                points[
+                    points.length - 1
+                ];
 
-            var current =
-                converted[i];
+            var first =
+                points[0];
 
 
-            var midpointX =
+            var startX =
                 (
                     previous.x +
-                    current.x
+                    first.x
                 ) / 2;
 
 
-            var midpointY =
+            var startY =
                 (
                     previous.y +
-                    current.y
+                    first.y
+                ) / 2;
+
+
+            d =
+                "M " +
+                startX +
+                " " +
+                startY;
+
+
+            for (
+                var i = 0;
+                i < points.length;
+                i++
+            ) {
+
+                var current =
+                    points[i];
+
+
+                var next =
+                    points[
+                        (
+                            i + 1
+                        ) %
+                        points.length
+                    ];
+
+
+                var midpointX =
+                    (
+                        current.x +
+                        next.x
+                    ) / 2;
+
+
+                var midpointY =
+                    (
+                        current.y +
+                        next.y
+                    ) / 2;
+
+
+                d +=
+                    " Q " +
+                    current.x +
+                    " " +
+                    current.y +
+                    " " +
+                    midpointX +
+                    " " +
+                    midpointY;
+
+            }
+
+
+            d += " Z";
+
+
+            return d;
+
+        }
+
+
+        d =
+            "M " +
+            points[0].x +
+            " " +
+            points[0].y;
+
+
+        for (
+            var j = 1;
+            j < points.length;
+            j++
+        ) {
+
+            var previousPoint =
+                points[j - 1];
+
+            var currentPoint =
+                points[j];
+
+
+            var midpointX2 =
+                (
+                    previousPoint.x +
+                    currentPoint.x
+                ) / 2;
+
+
+            var midpointY2 =
+                (
+                    previousPoint.y +
+                    currentPoint.y
                 ) / 2;
 
 
             d +=
                 " Q " +
-                previous.x +
+                previousPoint.x +
                 " " +
-                previous.y +
+                previousPoint.y +
                 " " +
-                midpointX +
+                midpointX2 +
                 " " +
-                midpointY;
+                midpointY2;
 
         }
 
 
         var last =
-            converted[
-                converted.length - 1
+            points[
+                points.length - 1
             ];
 
 
@@ -633,7 +868,7 @@
 
     /*
      * ==================================================
-     * FIELD TAG HIGHLIGHTING
+     * FIELD HIGHLIGHTING
      * ==================================================
      */
 
@@ -720,9 +955,10 @@
         ).forEach(
             function (id) {
 
-                fieldTags[id].classList.remove(
-                    "is-highlighted"
-                );
+                fieldTags[id]
+                    .classList.remove(
+                        "is-highlighted"
+                    );
 
             }
         );
@@ -732,21 +968,9 @@
 
     /*
      * ==================================================
-     * INTERSECTION ANIMATION
+     * FIELD / PROJECT HELPERS
      * ==================================================
      */
-
-    var activeIntersection =
-        null;
-
-
-    var animationFrame =
-        null;
-
-
-    var animationStart =
-        0;
-
 
     function getField(
         fieldId
@@ -774,7 +998,9 @@
             typeof PROJECTS === "undefined" ||
             !Array.isArray(PROJECTS)
         ) {
+
             return 0;
+
         }
 
 
@@ -817,468 +1043,505 @@
     }
 
 
-function createStringElements(
-    intersectionItem
-) {
+    /*
+     * ==================================================
+     * STRING GENERATION
+     * ==================================================
+     */
 
-    var group =
-        document.createElementNS(
-            NS,
-            "g"
-        );
-
-    group.setAttribute(
-        "class",
-        "research-string-group"
-    );
-
-    var strings = [];
-
-    var intersection =
-        intersectionItem.data;
-
-    intersection.fields.forEach(
-        function (
-            fieldId,
-            index
-        ) {
-
-            var field =
-                getField(
-                    fieldId
-                );
-
-            if (!field) {
-                return;
-            }
-
-            var path =
-                document.createElementNS(
-                    NS,
-                    "path"
-                );
-
-            path.setAttribute(
-                "class",
-                "research-intersection-string " +
-                field.status
-            );
-
-            path.dataset.fieldId =
-                fieldId;
-
-            /*
-             * Start at the actual contour.
-             */
-
-            path.setAttribute(
-                "d",
-                createContourPath(
-                    field.path
-                )
-            );
-
-            group.appendChild(
-                path
-            );
-
-            strings.push({
-
-                field:
-                    field,
-
-                element:
-                    path,
-
-                index:
-                    index,
-
-                progress:
-                    0
-
-            });
-
-        }
-    );
-
-    interactionLayer.appendChild(
-        group
-    );
-
-    return {
-
-        group:
-            group,
-
-        strings:
-            strings,
-
-        center:
-            intersectionItem.point
-
-    };
-
-}
-function interpolateContourToString(
-    fieldPath,
-    center,
-    index,
-    time,
-    progress
-) {
-
-    var contourPoints =
-        fieldPath.map(
-            toSVGPoint
-        );
-
-    var samples =
-        Math.max(
-            contourPoints.length,
-            48
-        );
-
-    var points = [];
-
-    for (
-        var i = 0;
-        i < samples;
-        i++
+    function createStringElements(
+        intersection,
+        center
     ) {
 
-        var contourIndex =
-            Math.floor(
-                i /
-                samples *
-                contourPoints.length
+        var group =
+            document.createElementNS(
+                NS,
+                "g"
             );
 
-        contourIndex =
-            Math.min(
-                contourIndex,
-                contourPoints.length - 1
-            );
 
-        var contour =
-            contourPoints[
-                contourIndex
-            ];
+        group.setAttribute(
+            "class",
+            "research-string-group"
+        );
+
 
         /*
-         * Generate the corresponding
-         * animated circular point.
+         * Strings sit above normal contours.
          */
 
-        var t =
-            (
-                i /
-                samples
-            ) *
-            Math.PI *
-            2;
+        stringLayer.appendChild(
+            group
+        );
+
+
+        var strings = [];
+
+
+        intersection.fields.forEach(
+            function (
+                fieldId,
+                index
+            ) {
+
+                var field =
+                    getField(
+                        fieldId
+                    );
+
+
+                if (!field) {
+                    return;
+                }
+
+
+                var path =
+                    document.createElementNS(
+                        NS,
+                        "path"
+                    );
+
+
+                path.setAttribute(
+                    "class",
+                    "research-intersection-string " +
+                    field.status
+                );
+
+
+                path.dataset.fieldId =
+                    fieldId;
+
+
+                /*
+                 * Start exactly on the passive contour.
+                 */
+
+                path.setAttribute(
+                    "d",
+                    createSmoothPath(
+                        field.path.map(
+                            toSVGPoint
+                        ),
+                        false
+                    )
+                );
+
+
+                group.appendChild(
+                    path
+                );
+
+
+                strings.push({
+
+                    field:
+                        field,
+
+                    element:
+                        path,
+
+                    index:
+                        index,
+
+                    progress:
+                        0
+
+                });
+
+            }
+        );
+
+
+        /*
+         * Hidden until activated.
+         */
+
+        group.style.opacity = "0";
+
+
+        return {
+
+            group:
+                group,
+
+            strings:
+                strings,
+
+            center:
+                center
+
+        };
+
+    }
+
+
+    /*
+     * ==================================================
+     * ACTIVE CIRCLE
+     * ==================================================
+     *
+     * IMPORTANT:
+     *
+     * X and Y use the SAME radius.
+     *
+     * There is deliberately NO vertical compression.
+     */
+
+    function createTargetPoints(
+        center,
+        pointCount,
+        index,
+        time
+    ) {
+
+        var points = [];
+
+
+        /*
+         * Slightly different radii make the
+         * participating strands visually distinct.
+         */
+
+        var baseRadius =
+            43 +
+            index *
+            7;
+
 
         var phase =
             index *
-            2.1;
+            (
+                Math.PI *
+                2 /
+                pointCount
+            );
 
-        var baseRadius =
-            48 +
-            index *
-            8;
 
-        var wobble =
-            Math.sin(
-                t * 3 +
-                phase +
-                time * 0.0012
-            ) *
-            9;
-
-        var wobble2 =
-            Math.sin(
-                t * 5 -
-                phase +
-                time * 0.0008
-            ) *
-            5;
-
-        var radius =
-            baseRadius +
-            wobble +
-            wobble2;
+        /*
+         * Very slow overall rotation.
+         */
 
         var rotation =
             time *
-            0.00018 *
+            0.000055 *
             (
                 index % 2 === 0
                     ? 1
                     : -1
             );
 
-        var angle =
-            t +
-            phase +
-            rotation;
 
-        var target = {
-
-            x:
-                center.x +
-                Math.cos(angle) *
-                radius,
-
-            y:
-                center.y +
-                Math.sin(angle) *
-                radius
-
-        };
-
-        points.push({
-
-            x:
-                contour.x +
-                (
-                    target.x -
-                    contour.x
-                ) *
-                progress,
-
-            y:
-                contour.y +
-                (
-                    target.y -
-                    contour.y
-                ) *
-                progress
-
-        });
-
-    }
-
-    var d =
-        "M " +
-        points[0].x +
-        " " +
-        points[0].y;
-
-    for (
-        var i = 1;
-        i < points.length;
-        i++
-    ) {
-
-        var previous =
-            points[i - 1];
-
-        var current =
-            points[i];
-
-        var midpointX =
-            (
-                previous.x +
-                current.x
-            ) / 2;
-
-        var midpointY =
-            (
-                previous.y +
-                current.y
-            ) / 2;
-
-        d +=
-            " Q " +
-            previous.x +
-            " " +
-            previous.y +
-            " " +
-            midpointX +
-            " " +
-            midpointY;
-
-    }
-
-    d += " Z";
-
-    return d;
-
-}
-function animateStrings(
-    stringState
-) {
-
-    if (
-        !stringState
-    ) {
-        animationFrame =
-            null;
-
-        return;
-    }
-
-    var now =
-        performance.now();
-stringState.strings.forEach(
-    function (string) {
-
-        var difference =
-            stringState.targetProgress -
-            string.progress;
-
-        string.progress +=
-            difference *
-            0.08;
-
-        if (
-            Math.abs(difference) <
-            0.002
+        for (
+            var i = 0;
+            i < pointCount;
+            i++
         ) {
 
-            string.progress =
-                stringState.targetProgress;
+            var angle =
+                (
+                    i /
+                    pointCount
+                ) *
+                Math.PI *
+                2 +
+                phase +
+                rotation;
+
+
+            /*
+             * Small organic vibration.
+             *
+             * These are deliberately modest so the
+             * overall geometry remains circular.
+             */
+
+            var wobble =
+                Math.sin(
+                    angle * 3 +
+                    index * 1.7 +
+                    time * 0.0011
+                ) *
+                5;
+
+
+            var wobble2 =
+                Math.sin(
+                    angle * 5 -
+                    index * 0.9 +
+                    time * 0.00073
+                ) *
+                2.5;
+
+
+            var radius =
+                baseRadius +
+                wobble +
+                wobble2;
+
+
+            points.push({
+
+                x:
+                    center.x +
+                    Math.cos(
+                        angle
+                    ) *
+                    radius,
+
+                y:
+                    center.y +
+                    Math.sin(
+                        angle
+                    ) *
+                    radius
+
+            });
 
         }
 
+
+        return points;
+
+    }
+
+
+    /*
+     * ==================================================
+     * STRING FRAME
+     * ==================================================
+     */
+
+    function renderString(
+        string,
+        progress,
+        time
+    ) {
+
+        var sourcePoints =
+            string.field.path.map(
+                toSVGPoint
+            );
+
+
+        var targetPoints =
+            createTargetPoints(
+                stringStateCenter(
+                    string
+                ),
+                sourcePoints.length,
+                string.index,
+                time
+            );
+
+
+        /*
+         * Keep the same number of points on both
+         * sides of the interpolation.
+         */
+
+        var amount =
+            easeInOutCubic(
+                progress
+            );
+
+
+        var points = [];
+
+
+        for (
+            var i = 0;
+            i < sourcePoints.length;
+            i++
+        ) {
+
+            points.push({
+
+                x:
+                    lerp(
+                        sourcePoints[i].x,
+                        targetPoints[i].x,
+                        amount
+                    ),
+
+                y:
+                    lerp(
+                        sourcePoints[i].y,
+                        targetPoints[i].y,
+                        amount
+                    )
+
+            });
+
+        }
+
+
+        /*
+         * Before the circular state is reached,
+         * use an open contour.
+         *
+         * Once active, close the path.
+         */
+
         string.element.setAttribute(
             "d",
-            interpolateContourToString(
-                string.field.path,
-                stringState.center,
-                string.index,
-                now,
-                string.progress
+            createSmoothPath(
+                points,
+                progress > 0.96
             )
         );
 
     }
-);
-    stringState.strings.forEach(
-        function (string) {
 
-            var contourPath =
-                createContourPath(
-                    string.field.path
-                );
 
-            var circularPath =
-                createStringPath(
-                    stringState.center,
-                    string.index,
-                    now
-                );
-
-            /*
-             * SVG paths cannot be numerically
-             * interpolated directly with CSS.
-             *
-             * Instead, the transition is handled
-             * by progressively switching the path
-             * through sampled points.
-             */
-
-            string.element.setAttribute(
-                "d",
-                interpolateContourToString(
-                    string.field.path,
-                    stringState.center,
-                    string.index,
-                    now,
-                    string.progress
-                )
-            );
-
-        }
-    );
-
-    /*
-     * Keep animating while transitioning
-     * or while the intersection remains active.
-     */
-
-    if (
-        activeIntersection ||
-        stringState.transitioning
+    function stringStateCenter(
+        string
     ) {
 
-        animationFrame =
-            requestAnimationFrame(
-                function () {
-
-                    animateStrings(
-                        stringState
-                    );
-
-                }
-            );
-
-    } else {
-
-        animationFrame =
-            null;
+        return string._center;
 
     }
-    var transitionComplete =
-    stringState.strings.every(
-        function (string) {
 
-            return (
-                Math.abs(
-                    string.progress -
-                    stringState.targetProgress
-                ) <
-                0.002
-            );
+
+    /*
+     * ==================================================
+     * ACTIVE INTERSECTION STATE
+     * ==================================================
+     */
+
+    var activeIntersection =
+        null;
+
+
+    var animationFrame =
+        null;
+
+
+    var animationTime =
+        0;
+
+
+    /*
+     * ==================================================
+     * UPDATE STRING ANIMATION
+     * ==================================================
+     */
+
+    function animationLoop(
+        timestamp
+    ) {
+
+        animationTime =
+            timestamp;
+
+
+        if (
+            !activeIntersection
+        ) {
+
+            animationFrame =
+                null;
+
+            return;
 
         }
-    );
 
-if (
-    activeIntersection ||
-    !transitionComplete
-) {
 
-    animationFrame =
-        requestAnimationFrame(
-            function () {
+        var state =
+            activeIntersection
+                .stringState;
 
-                animateStrings(
-                    stringState
+
+        state.strings.forEach(
+            function (string) {
+
+                renderString(
+                    string,
+                    string.progress,
+                    timestamp
                 );
 
             }
         );
 
-} else {
 
-    animationFrame =
-        null;
+        animationFrame =
+            requestAnimationFrame(
+                animationLoop
+            );
 
-}
+    }
 
-}
 
-    function activateIntersection(
-        intersection
-    ) {
+    function startAnimation() {
 
         if (
-            activeIntersection ===
-            intersection
+            animationFrame !== null
         ) {
             return;
         }
 
 
-        deactivateIntersection();
+        animationFrame =
+            requestAnimationFrame(
+                animationLoop
+            );
+
+    }
+
+
+    function stopAnimation() {
+
+        if (
+            animationFrame !== null
+        ) {
+
+            cancelAnimationFrame(
+                animationFrame
+            );
+
+            animationFrame =
+                null;
+
+        }
+
+    }
+
+
+    /*
+     * ==================================================
+     * ACTIVATE
+     * ==================================================
+     */
+
+    function activateIntersection(
+        item
+    ) {
+
+        /*
+         * If another intersection is active,
+         * restore it first.
+         */
+
+        if (
+            activeIntersection &&
+            activeIntersection !== item
+        ) {
+
+            finishDeactivate(
+                activeIntersection
+            );
+
+        }
 
 
         activeIntersection =
-            intersection;
+            item;
 
 
         /*
-         * Highlight participating field tags.
+         * Field tags.
          */
 
         Object.keys(
@@ -1290,8 +1553,18 @@ if (
                     fieldTags[fieldId];
 
 
+                tag.classList.remove(
+                    "is-dimmed"
+                );
+
+
+                tag.classList.remove(
+                    "is-intersection-field"
+                );
+
+
                 if (
-                    intersection.fields.includes(
+                    item.data.fields.includes(
                         fieldId
                     )
                 ) {
@@ -1313,7 +1586,7 @@ if (
 
 
         /*
-         * Dim all ordinary contours.
+         * Contours.
          */
 
         Object.keys(
@@ -1327,8 +1600,23 @@ if (
                     ];
 
 
+                contour.element.classList.remove(
+                    "is-highlighted"
+                );
+
+
+                contour.element.classList.remove(
+                    "is-dimmed"
+                );
+
+
+                contour.element.classList.remove(
+                    "is-obscured"
+                );
+
+
                 if (
-                    intersection.fields.includes(
+                    item.data.fields.includes(
                         fieldId
                     )
                 ) {
@@ -1350,34 +1638,17 @@ if (
 
 
         /*
-         * Highlight the intersection.
+         * Intersection visual state.
          */
 
-        var intersectionItem =
-            intersectionElements.find(
-                function (item) {
-
-                    return (
-                        item.data.id ===
-                        intersection.id
-                    );
-
-                }
-            );
+        item.group.classList.add(
+            "is-active"
+        );
 
 
-        if (intersectionItem) {
-
-            intersectionItem.group.classList.add(
-                "is-active"
-            );
-
-
-            intersectionItem.label.classList.add(
-                "is-visible"
-            );
-
-        }
+        item.label.classList.add(
+            "is-visible"
+        );
 
 
         /*
@@ -1386,7 +1657,7 @@ if (
 
         var count =
             countMatchingProjects(
-                intersection.fields
+                item.data.fields
             );
 
 
@@ -1406,79 +1677,135 @@ if (
         );
 
 
-        if (
-    intersectionItem &&
-    intersectionItem.stringState
-) {
+        /*
+         * Prepare strings.
+         */
 
-    activeStringState =
-        intersectionItem.stringState;
+        item.stringState.strings.forEach(
+            function (string) {
 
-    activeStringState.transitioning =
-        true;
+                /*
+                 * If the user re-enters while
+                 * reversing, continue from the
+                 * current position.
+                 */
 
-    activeStringState.targetProgress =
-        1;
+                string._center =
+                    item.point;
 
-    if (
-        animationFrame === null
-    ) {
+            }
+        );
 
-        animationFrame =
-            requestAnimationFrame(
-                function () {
 
-                    animateStrings(
-                        activeStringState
-                    );
+        /*
+         * Show strings.
+         */
 
-                }
-            );
+        item.stringState.group.style.opacity =
+            "1";
+
+
+        /*
+         * Start animation immediately.
+         *
+         * The strings are still at progress 0,
+         * so they initially coincide with their
+         * passive contours.
+         */
+
+        startAnimation();
+
+        animateProgress(
+            item,
+            1
+        );
 
     }
-
-}
-
-    }
-
-
-    var activeStringState =
-        null;
 
 
     /*
      * ==================================================
-     * DEACTIVATE INTERSECTION
+     * DEACTIVATE
      * ==================================================
      */
 
-    function deactivateIntersection() {
+    function deactivateIntersection(
+        item
+    ) {
+
+        /*
+         * Ignore stale mouseleave events.
+         */
 
         if (
-            animationFrame !== null
+            activeIntersection !== item
+        ) {
+            return;
+        }
+
+
+        /*
+         * Keep animation running while
+         * strings morph back.
+         */
+
+        animateProgress(
+            item,
+            0,
+            function () {
+
+                finishDeactivate(
+                    item
+                );
+
+            }
+        );
+
+    }
+
+
+    /*
+     * ==================================================
+     * FINISH DEACTIVATION
+     * ==================================================
+     */
+
+    function finishDeactivate(
+        item
+    ) {
+
+        if (
+            activeIntersection === item
         ) {
 
-            cancelAnimationFrame(
-                animationFrame
-            );
-
-            animationFrame =
+            activeIntersection =
                 null;
 
         }
 
 
-if (
-    activeStringState
-) {
+        item.stringState.strings.forEach(
+            function (string) {
 
-    activeStringState.transitioning =
-        true;
+                string.progress =
+                    0;
 
-    activeStringState.targetProgress =
-        0;
+                string.element.setAttribute(
+                    "d",
+                    createSmoothPath(
+                        string.field.path.map(
+                            toSVGPoint
+                        ),
+                        false
+                    )
+                );
 
-}
+            }
+        );
+
+
+        item.stringState.group.style.opacity =
+            "0";
 
 
         /*
@@ -1505,12 +1832,22 @@ if (
                     "is-obscured"
                 );
 
+
+                contour.element.classList.remove(
+                    "is-dimmed"
+                );
+
+
+                contour.element.classList.remove(
+                    "is-highlighted"
+                );
+
             }
         );
 
 
         /*
-         * Restore field tags.
+         * Restore tags.
          */
 
         Object.keys(
@@ -1523,7 +1860,6 @@ if (
                         "is-intersection-field"
                     );
 
-
                 fieldTags[fieldId]
                     .classList.remove(
                         "is-dimmed"
@@ -1534,54 +1870,319 @@ if (
 
 
         /*
-         * Restore intersection nodes.
+         * Restore node.
+
          */
 
-        intersectionElements.forEach(
-            function (item) {
-
-                item.group.classList.remove(
-                    "is-active"
-                );
-
-
-                item.label.classList.remove(
-                    "is-visible"
-                );
-
-            }
+        item.group.classList.remove(
+            "is-active"
         );
 
+
+        item.label.classList.remove(
+            "is-visible"
+        );
+
+
+        /*
+         * Work count.
+
+         */
 
         workCount.classList.remove(
             "is-visible"
         );
 
 
-        activeIntersection =
-            null;
+        /*
+         * Stop animation only when no
+         * intersection is active.
+         */
+
+        if (
+            !activeIntersection
+        ) {
+
+            stopAnimation();
+
+        }
 
     }
 
 
     /*
      * ==================================================
-     * WORK COUNT
+     * PROGRESS ANIMATION
      * ==================================================
      */
 
-    var workCount =
-        document.createElement(
-            "div"
+    function animateProgress(
+        item,
+        target,
+        onComplete
+    ) {
+
+        var strings =
+            item.stringState.strings;
+
+
+        if (
+            strings.length === 0
+        ) {
+
+            if (onComplete) {
+                onComplete();
+            }
+
+            return;
+
+        }
+
+
+        /*
+         * Each string retains its own progress.
+         */
+
+        var startValues =
+            strings.map(
+                function (string) {
+
+                    return string.progress;
+
+                }
+            );
+
+
+        var maxDifference =
+            0;
+
+
+        startValues.forEach(
+            function (value) {
+
+                maxDifference =
+                    Math.max(
+                        maxDifference,
+                        Math.abs(
+                            target -
+                            value
+                        )
+                    );
+
+            }
         );
 
 
-    workCount.className =
-        "research-work-count";
+        /*
+         * Very quick if already at the
+         * requested state.
+         */
+
+        if (
+            maxDifference < 0.001
+        ) {
+
+            strings.forEach(
+                function (string) {
+
+                    string.progress =
+                        target;
+
+                }
+            );
 
 
-    container.appendChild(
-        workCount
+            if (onComplete) {
+                onComplete();
+            }
+
+
+            return;
+
+        }
+
+
+        var duration =
+            target > 0
+                ? 900
+                : 700;
+
+
+        var startTime =
+            performance.now();
+
+
+        /*
+         * The progress animation itself does
+         * not use the continuously changing
+         * circular coordinates as its clock.
+         *
+         * That prevents the target from moving
+         * unpredictably during the transition.
+         */
+
+        function step(
+            timestamp
+        ) {
+
+            /*
+             * Abort this particular transition
+             * if another intersection has become
+             * active.
+             */
+
+            if (
+                activeIntersection &&
+                activeIntersection !== item &&
+                target > 0
+            ) {
+
+                return;
+
+            }
+
+
+            var elapsed =
+                timestamp -
+                startTime;
+
+
+            var ratio =
+                clamp(
+                    elapsed /
+                    duration,
+                    0,
+                    1
+                );
+
+
+            var eased =
+                easeInOutCubic(
+                    ratio
+                );
+
+
+            strings.forEach(
+                function (string, index) {
+
+                    string.progress =
+                        lerp(
+                            startValues[index],
+                            target,
+                            eased
+                        );
+
+                }
+            );
+
+
+            /*
+             * Render immediately.
+             */
+
+            strings.forEach(
+                function (string) {
+
+                    renderString(
+                        string,
+                        string.progress,
+                        timestamp
+                    );
+
+                }
+            );
+
+
+            if (
+                ratio < 1
+            ) {
+
+                requestAnimationFrame(
+                    step
+                );
+
+            } else {
+
+                strings.forEach(
+                    function (string) {
+
+                        string.progress =
+                            target;
+
+                    }
+                );
+
+
+                if (onComplete) {
+                    onComplete();
+                }
+
+            }
+
+        }
+
+
+        requestAnimationFrame(
+            step
+        );
+
+    }
+
+
+    /*
+     * ==================================================
+     * INITIAL STRING SETUP
+     * ==================================================
+     */
+
+    intersectionElements.forEach(
+        function (item) {
+
+            item.stringState.strings.forEach(
+                function (string) {
+
+                    string._center =
+                        item.point;
+
+
+                    string.progress =
+                        0;
+
+
+                    string.element.setAttribute(
+                        "d",
+                        createSmoothPath(
+                            string.field.path.map(
+                                toSVGPoint
+                            ),
+                            false
+                        )
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    /*
+     * ==================================================
+     * RESIZE
+     * ==================================================
+     */
+
+    window.addEventListener(
+        "resize",
+        function () {
+
+            /*
+             * SVG coordinates are viewBox based,
+             * so no positional recalculation is
+             * necessary.
+             */
+
+        }
     );
 
 
