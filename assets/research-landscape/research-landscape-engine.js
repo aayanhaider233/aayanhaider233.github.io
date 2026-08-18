@@ -1,50 +1,34 @@
 (function () {
-
     "use strict";
-
-
     var container =
         document.getElementById(
             "research-landscape"
         );
-
-
     if (
         !container ||
         typeof RESEARCH_LANDSCAPE === "undefined"
     ) {
         return;
     }
-
-
     var NS =
         "http://www.w3.org/2000/svg";
-
-
+    var nodes =
+        RESEARCH_LANDSCAPE.nodes;
+    var edges =
+        RESEARCH_LANDSCAPE.edges;
+    var nodeMap = {};
+    nodes.forEach(function (node) {
+        nodeMap[node.id] = node;
+    });
     var SVG_WIDTH = 1000;
     var SVG_HEIGHT = 600;
-
-
-    var fields =
-        RESEARCH_LANDSCAPE.fields || [];
-
-    var intersections =
-        RESEARCH_LANDSCAPE.intersections || [];
-
-
-    /*
-     * ==================================================
-     * SVG
-     * ==================================================
-     */
-
+    var NODE_RADIUS = 8;
+    var DIAMOND_SIZE = 16;
     var svg =
         document.createElementNS(
             NS,
             "svg"
         );
-
-
     svg.setAttribute(
         "viewBox",
         "0 0 " +
@@ -52,568 +36,270 @@
         " " +
         SVG_HEIGHT
     );
-
-
     svg.setAttribute(
         "preserveAspectRatio",
         "xMidYMid meet"
     );
-
-
-    var contourLayer =
+    var edgeLayer =
         document.createElementNS(
             NS,
             "g"
         );
-
-    contourLayer.setAttribute(
-        "class",
-        "research-contour-layer"
-    );
-
-
-    var stringLayer =
+    var nodeLayer =
         document.createElementNS(
             NS,
             "g"
         );
-
-    stringLayer.setAttribute(
-        "class",
-        "research-string-layer"
-    );
-
-
-    var interactionLayer =
-        document.createElementNS(
-            NS,
-            "g"
-        );
-
-    interactionLayer.setAttribute(
-        "class",
-        "research-interaction-layer"
-    );
-
-
     var labelLayer =
         document.createElementNS(
             NS,
             "g"
         );
-
+    edgeLayer.setAttribute(
+        "class",
+        "research-edge-layer"
+    );
+    nodeLayer.setAttribute(
+        "class",
+        "research-node-layer"
+    );
     labelLayer.setAttribute(
         "class",
         "research-label-layer"
     );
-
-
     svg.appendChild(
-        contourLayer
+        edgeLayer
     );
-
     svg.appendChild(
-        stringLayer
+        nodeLayer
     );
-
-    svg.appendChild(
-        interactionLayer
-    );
-
     svg.appendChild(
         labelLayer
     );
-
-
     container.appendChild(
         svg
     );
-
-
-    /*
-     * ==================================================
-     * FIELD TAG BAR
-     * ==================================================
-     */
-
-    var fieldBar =
+    var fieldIndicator =
         document.createElement(
             "div"
         );
-
-
-    fieldBar.className =
-        "research-field-bar";
-
-
+    fieldIndicator.className =
+        "research-field-indicator";
     container.appendChild(
-        fieldBar
+        fieldIndicator
     );
-
-
-    var fieldTags = {};
-
-
-    fields.forEach(
-        function (field) {
-
-            var tag =
-                document.createElement(
-                    "span"
-                );
-
-
-            tag.className =
-                "research-field-tag " +
-                field.status;
-
-
-            tag.dataset.fieldId =
-                field.id;
-
-
-            tag.textContent =
-                field.name;
-
-
-            fieldBar.appendChild(
-                tag
-            );
-
-
-            fieldTags[field.id] =
-                tag;
-
-
-            tag.addEventListener(
-                "mouseenter",
-                function () {
-
-                    if (
-                        activeIntersection
-                    ) {
-                        return;
-                    }
-
-
-                    highlightField(
-                        field.id
-                    );
-
-                }
-            );
-
-
-            tag.addEventListener(
-                "mouseleave",
-                function () {
-
-                    if (
-                        activeIntersection
-                    ) {
-                        return;
-                    }
-
-
-                    clearFieldHighlight();
-
-                }
-            );
-
-        }
-    );
-
-
-    /*
-     * ==================================================
-     * FIELD CONTOURS
-     * ==================================================
-     */
-
-    var contourElements = {};
-
-
-    fields.forEach(
-        function (field) {
-
-            var path =
-                document.createElementNS(
-                    NS,
-                    "path"
-                );
-
-
-            path.setAttribute(
-                "class",
-                "research-contour " +
-                field.status
-            );
-
-
-            path.setAttribute(
-                "d",
-                createSmoothPath(
-                    field.path.map(
-                        toSVGPoint
-                    ),
-                    false
+    fieldIndicator.addEventListener(
+        "transitionend",
+        function (event) {
+            if (
+                event.propertyName !== "transform"
+            ) {
+                return;
+            }
+            if (
+                fieldIndicator.classList.contains(
+                    "is-hidden-right"
+                ) &&
+                !fieldIndicator.classList.contains(
+                    "is-visible"
                 )
-            );
-
-
-            path.setAttribute(
-                "data-field-id",
-                field.id
-            );
-
-
-            contourLayer.appendChild(
-                path
-            );
-
-
-            contourElements[field.id] = {
-
-                field:
-                    field,
-
-                element:
-                    path
-
-            };
-
+            ) {
+                fieldIndicator.style.transition =
+                    "none";
+                fieldIndicator.classList.remove(
+                    "is-hidden-right"
+                );
+                void fieldIndicator.offsetWidth;
+                fieldIndicator.style.transition =
+                    "";
+            }
         }
     );
-
-
-    /*
-     * ==================================================
-     * INTERSECTION NODES
-     * ==================================================
-     */
-
-    var intersectionElements = [];
-
-
-    intersections.forEach(
-        function (intersection) {
-
-            var point =
-                toSVGPoint(
-                    [
-                        intersection.x,
-                        intersection.y
-                    ]
-                );
-
-
-            var group =
-                document.createElementNS(
-                    NS,
-                    "g"
-                );
-
-
-            group.setAttribute(
-                "class",
-                "research-intersection"
-            );
-
-
-            group.dataset.intersectionId =
-                intersection.id;
-
-
-            group.setAttribute(
-                "transform",
-                "translate(" +
-                point.x +
-                " " +
-                point.y +
-                ")"
-            );
-
-
-            /*
-             * Hit area.
-             */
-
-            var hit =
-                document.createElementNS(
-                    NS,
-                    "circle"
-                );
-
-
-            hit.setAttribute(
-                "class",
-                "research-intersection-hit"
-            );
-
-
-            hit.setAttribute(
-                "r",
-                "18"
-            );
-
-
-            /*
-             * Diamond.
-             */
-
-            var diamond =
-                document.createElementNS(
-                    NS,
-                    "rect"
-                );
-
-
-            diamond.setAttribute(
-                "class",
-                "research-intersection-shape"
-            );
-
-
-            diamond.setAttribute(
-                "x",
-                -6
-            );
-
-
-            diamond.setAttribute(
-                "y",
-                -6
-            );
-
-
-            diamond.setAttribute(
-                "width",
-                12
-            );
-
-
-            diamond.setAttribute(
-                "height",
-                12
-            );
-
-
-            diamond.setAttribute(
-                "transform",
-                "rotate(45)"
-            );
-
-
-            group.appendChild(
-                hit
-            );
-
-
-            group.appendChild(
-                diamond
-            );
-
-
-            interactionLayer.appendChild(
-                group
-            );
-
-
-            /*
-             * Label.
-             */
-
-            var label =
-                document.createElementNS(
-                    NS,
-                    "text"
-                );
-
-
-            label.setAttribute(
-                "class",
-                "research-intersection-label"
-            );
-
-
-            label.setAttribute(
-                "x",
-                point.x
-            );
-
-
-            label.setAttribute(
-                "y",
-                point.y - 25
-            );
-
-
-            label.setAttribute(
-                "text-anchor",
-                "middle"
-            );
-
-
-            label.textContent =
-                intersection.name ||
-                "Intersecting Works";
-
-
-            labelLayer.appendChild(
-                label
-            );
-
-
-            /*
-             * Persistent string state.
-             */
-
-            var stringState =
-                createStringElements(
-                    intersection,
-                    point
-                );
-
-
-            var item = {
-
-                data:
-                    intersection,
-
-                group:
-                    group,
-
-                diamond:
-                    diamond,
-
-                label:
-                    label,
-
-                point:
-                    point,
-
-                hit:
-                    hit,
-
-                stringState:
-                    stringState
-
-            };
-
-
-            intersectionElements.push(
-                item
-            );
-
-
-            /*
-             * Hover.
-             */
-
-            hit.addEventListener(
-                "mouseenter",
-                function () {
-
-                    activateIntersection(
-                        item
+    function populateFieldIndicator(
+        fields
+    ) {
+        fieldIndicator.innerHTML =
+            "";
+        fields.forEach(
+            function (fieldName) {
+                var row =
+                    document.createElement(
+                        "div"
                     );
-
-                }
-            );
-
-
-            hit.addEventListener(
-                "mouseleave",
-                function () {
-
-                    deactivateIntersection(
-                        item
-                    );
-
-                }
-            );
-
-
-            /*
-             * Click.
-             */
-
-            hit.addEventListener(
-                "click",
-                function () {
-
-                    if (
-                        typeof window.openProjectsPanel ===
-                        "function"
-                    ) {
-
-                        window.openProjectsPanel(
-                            intersection.fields
-                        );
-
-                    }
-
-                }
-            );
-
+                row.className =
+                    "research-field-indicator-item";
+                row.textContent =
+                    fieldName;
+                fieldIndicator.appendChild(
+                    row
+                );
+            }
+        );
+    }
+    function showFieldIndicator(
+        node
+    ) {
+        if (
+            !isWorkNode(node) ||
+            !node.fields ||
+            !node.fields.length
+        ) {
+            return;
         }
-    );
-
-
-    /*
-     * ==================================================
-     * WORK COUNT
-     * ==================================================
-     */
-
+        populateFieldIndicator(
+            node.fields
+        );
+        fieldIndicator.classList.remove(
+            "is-hidden-right"
+        );
+        fieldIndicator.classList.add(
+            "is-visible"
+        );
+    }
+    function hideFieldIndicator() {
+        fieldIndicator.classList.remove(
+            "is-visible"
+        );
+        fieldIndicator.classList.add(
+            "is-hidden-right"
+        );
+    }
     var workCount =
         document.createElement(
             "div"
         );
-
-
     workCount.className =
         "research-work-count";
-
-
     container.appendChild(
         workCount
     );
-
-
-    /*
-     * ==================================================
-     * HELPERS
-     * ==================================================
-     */
-
-    function toSVGPoint(
-        point
+    workCount.addEventListener(
+        "transitionend",
+        function (event) {
+            if (
+                event.propertyName !== "transform"
+            ) {
+                return;
+            }
+            if (
+                workCount.classList.contains(
+                    "is-hidden-left"
+                ) &&
+                !workCount.classList.contains(
+                    "is-visible"
+                )
+            ) {
+                workCount.style.transition =
+                    "none";
+                workCount.classList.remove(
+                    "is-hidden-left"
+                );
+                void workCount.offsetWidth;
+                workCount.style.transition =
+                    "";
+            }
+        }
+    );
+    function countMatchingProjects(
+        fields
     ) {
-
+        if (
+            typeof PROJECTS === "undefined" ||
+            !Array.isArray(PROJECTS)
+        ) {
+            return 0;
+        }
+        return PROJECTS.filter(
+            function (project) {
+                return fields.every(
+                    function (field) {
+                        return (
+                            project.fields || []
+                        ).includes(
+                            field
+                        );
+                    }
+                );
+            }
+        ).length;
+    }
+    function showWorkCount(
+        node
+    ) {
+        if (
+            !isWorkNode(node) ||
+            !node.fields ||
+            !node.fields.length
+        ) {
+            return;
+        }
+        var count =
+            countMatchingProjects(
+                node.fields
+            );
+        workCount.textContent =
+            count +
+            (
+                count === 1 ?
+                    " work" :
+                    " works"
+            );
+        workCount.classList.remove(
+            "is-hidden-left"
+        );
+        workCount.classList.add(
+            "is-visible"
+        );
+    }
+    function hideWorkCount() {
+        workCount.classList.remove(
+            "is-visible"
+        );
+        workCount.classList.add(
+            "is-hidden-left"
+        );
+    }
+    function createElement(
+        type,
+        attributes
+    ) {
+        var element =
+            document.createElementNS(
+                NS,
+                type
+            );
+        Object.keys(
+            attributes
+        ).forEach(
+            function (key) {
+                element.setAttribute(
+                    key,
+                    attributes[key]
+                );
+            }
+        );
+        return element;
+    }
+    function isWorkNode(node) {
+        return node.type === "work";
+    }
+    function getPosition(node) {
         return {
-
             x:
-                point[0] /
+                node.x /
                 100 *
                 SVG_WIDTH,
-
             y:
-                point[1] /
+                node.y /
                 100 *
                 SVG_HEIGHT
-
         };
-
     }
-
-
     function clamp(
         value,
         min,
         max
     ) {
-
         return Math.max(
             min,
             Math.min(
@@ -621,1569 +307,1486 @@
                 value
             )
         );
-
     }
-
-
-    function easeInOutCubic(
-        value
+    function nodeBoundaryDistance(
+        node,
+        dx,
+        dy
     ) {
-
-        value =
-            clamp(
-                value,
-                0,
-                1
+        var length =
+            Math.hypot(
+                dx,
+                dy
             );
-
-
-        return value < 0.5
-
-            ? 4 *
-                value *
-                value *
-                value
-
-            : 1 -
-                Math.pow(
-                    -2 *
-                    value +
-                    2,
-                    3
-                ) /
-                2;
-
-    }
-
-
-    function lerp(
-        a,
-        b,
-        amount
-    ) {
-
-        return (
-            a +
-            (
-                b - a
-            ) *
-            amount
-        );
-
-    }
-
-
-    /*
-     * ==================================================
-     * SMOOTH PATH
-     * ==================================================
-     *
-     * Uses quadratic curves through the midpoints
-     * of the supplied points.
-     *
-     * This gives both the passive contours and the
-     * active strings the same visual language.
-     */
-
-    function createSmoothPath(
-        points,
-        closed
-    ) {
-
         if (
-            !points ||
-            points.length === 0
+            length === 0
         ) {
-            return "";
-        }
-
-
-        if (
-            points.length === 1
-        ) {
-
-            return (
-                "M " +
-                points[0].x +
-                " " +
-                points[0].y
-            );
-
-        }
-
-
-        var d = "";
-
-
-        if (closed) {
-
-            var previous =
-                points[
-                    points.length - 1
-                ];
-
-            var first =
-                points[0];
-
-
-            var startX =
-                (
-                    previous.x +
-                    first.x
-                ) / 2;
-
-
-            var startY =
-                (
-                    previous.y +
-                    first.y
-                ) / 2;
-
-
-            d =
-                "M " +
-                startX +
-                " " +
-                startY;
-
-
-            for (
-                var i = 0;
-                i < points.length;
-                i++
-            ) {
-
-                var current =
-                    points[i];
-
-
-                var next =
-                    points[
-                        (
-                            i + 1
-                        ) %
-                        points.length
-                    ];
-
-
-                var midpointX =
-                    (
-                        current.x +
-                        next.x
-                    ) / 2;
-
-
-                var midpointY =
-                    (
-                        current.y +
-                        next.y
-                    ) / 2;
-
-
-                d +=
-                    " Q " +
-                    current.x +
-                    " " +
-                    current.y +
-                    " " +
-                    midpointX +
-                    " " +
-                    midpointY;
-
-            }
-
-
-            d += " Z";
-
-
-            return d;
-
-        }
-
-
-        d =
-            "M " +
-            points[0].x +
-            " " +
-            points[0].y;
-
-
-        for (
-            var j = 1;
-            j < points.length;
-            j++
-        ) {
-
-            var previousPoint =
-                points[j - 1];
-
-            var currentPoint =
-                points[j];
-
-
-            var midpointX2 =
-                (
-                    previousPoint.x +
-                    currentPoint.x
-                ) / 2;
-
-
-            var midpointY2 =
-                (
-                    previousPoint.y +
-                    currentPoint.y
-                ) / 2;
-
-
-            d +=
-                " Q " +
-                previousPoint.x +
-                " " +
-                previousPoint.y +
-                " " +
-                midpointX2 +
-                " " +
-                midpointY2;
-
-        }
-
-
-        var last =
-            points[
-                points.length - 1
-            ];
-
-
-        d +=
-            " T " +
-            last.x +
-            " " +
-            last.y;
-
-
-        return d;
-
-    }
-
-
-    /*
-     * ==================================================
-     * FIELD HIGHLIGHTING
-     * ==================================================
-     */
-
-    function highlightField(
-        fieldId
-    ) {
-
-        Object.keys(
-            contourElements
-        ).forEach(
-            function (id) {
-
-                var contour =
-                    contourElements[id];
-
-
-                if (
-                    id === fieldId
-                ) {
-
-                    contour.element.classList.add(
-                        "is-highlighted"
-                    );
-
-                } else {
-
-                    contour.element.classList.add(
-                        "is-dimmed"
-                    );
-
-                }
-
-            }
-        );
-
-
-        Object.keys(
-            fieldTags
-        ).forEach(
-            function (id) {
-
-                if (
-                    id === fieldId
-                ) {
-
-                    fieldTags[id].classList.add(
-                        "is-highlighted"
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    function clearFieldHighlight() {
-
-        Object.keys(
-            contourElements
-        ).forEach(
-            function (id) {
-
-                contourElements[id]
-                    .element
-                    .classList.remove(
-                        "is-highlighted"
-                    );
-
-
-                contourElements[id]
-                    .element
-                    .classList.remove(
-                        "is-dimmed"
-                    );
-
-            }
-        );
-
-
-        Object.keys(
-            fieldTags
-        ).forEach(
-            function (id) {
-
-                fieldTags[id]
-                    .classList.remove(
-                        "is-highlighted"
-                    );
-
-            }
-        );
-
-    }
-
-
-    /*
-     * ==================================================
-     * FIELD / PROJECT HELPERS
-     * ==================================================
-     */
-
-    function getField(
-        fieldId
-    ) {
-
-        return fields.find(
-            function (field) {
-
-                return (
-                    field.id ===
-                    fieldId
-                );
-
-            }
-        );
-
-    }
-
-
-    function countMatchingProjects(
-        fieldIds
-    ) {
-
-        if (
-            typeof PROJECTS === "undefined" ||
-            !Array.isArray(PROJECTS)
-        ) {
-
             return 0;
-
         }
-
-
-        return PROJECTS.filter(
-            function (project) {
-
-                var projectFields =
-                    project.fields || [];
-
-
-                return fieldIds.every(
-                    function (fieldId) {
-
-                        var field =
-                            getField(
-                                fieldId
-                            );
-
-
-                        if (!field) {
-                            return false;
-                        }
-
-
-                        return (
-                            projectFields.includes(
-                                fieldId
-                            ) ||
-                            projectFields.includes(
-                                field.name
-                            )
-                        );
-
-                    }
-                );
-
-            }
-        ).length;
-
-    }
-
-
-    /*
-     * ==================================================
-     * STRING GENERATION
-     * ==================================================
-     */
-
-    function createStringElements(
-        intersection,
-        center
-    ) {
-
-        var group =
-            document.createElementNS(
-                NS,
-                "g"
-            );
-
-
-        group.setAttribute(
-            "class",
-            "research-string-group"
-        );
-
-
-        /*
-         * Strings sit above normal contours.
-         */
-
-        stringLayer.appendChild(
-            group
-        );
-
-
-        var strings = [];
-
-
-        intersection.fields.forEach(
-            function (
-                fieldId,
-                index
-            ) {
-
-                var field =
-                    getField(
-                        fieldId
-                    );
-
-
-                if (!field) {
-                    return;
-                }
-
-
-                var path =
-                    document.createElementNS(
-                        NS,
-                        "path"
-                    );
-
-
-                path.setAttribute(
-                    "class",
-                    "research-intersection-string " +
-                    field.status
-                );
-
-
-                path.dataset.fieldId =
-                    fieldId;
-
-
-                /*
-                 * Start exactly on the passive contour.
-                 */
-
-                path.setAttribute(
-                    "d",
-                    createSmoothPath(
-                        field.path.map(
-                            toSVGPoint
-                        ),
-                        false
-                    )
-                );
-
-
-                group.appendChild(
-                    path
-                );
-
-
-                strings.push({
-
-                    field:
-                        field,
-
-                    element:
-                        path,
-
-                    index:
-                        index,
-
-                    progress:
-                        0
-
-                });
-
-            }
-        );
-
-
-        /*
-         * Hidden until activated.
-         */
-
-        group.style.opacity = "0";
-
-
-        return {
-
-            group:
-                group,
-
-            strings:
-                strings,
-
-            center:
-                center
-
-        };
-
-    }
-
-
-    /*
-     * ==================================================
-     * ACTIVE CIRCLE
-     * ==================================================
-     *
-     * IMPORTANT:
-     *
-     * X and Y use the SAME radius.
-     *
-     * There is deliberately NO vertical compression.
-     */
-
-    function createTargetPoints(
-        center,
-        pointCount,
-        index,
-        time
-    ) {
-
-        var points = [];
-
-
-        /*
-         * Slightly different radii make the
-         * participating strands visually distinct.
-         */
-
-        var baseRadius =
-            43 +
-            index *
-            7;
-
-
-        var phase =
-            index *
-            (
-                Math.PI *
-                2 /
-                pointCount
-            );
-
-
-        /*
-         * Very slow overall rotation.
-         */
-
-        var rotation =
-            time *
-            0.000055 *
-            (
-                index % 2 === 0
-                    ? 1
-                    : -1
-            );
-
-
-        for (
-            var i = 0;
-            i < pointCount;
-            i++
+        var ux =
+            dx / length;
+        var uy =
+            dy / length;
+        if (
+            node.type === "exploring" ||
+            node.type === "emerging"
         ) {
-
-            var angle =
-                (
-                    i /
-                    pointCount
-                ) *
-                Math.PI *
-                2 +
-                phase +
-                rotation;
-
-
-            /*
-             * Small organic vibration.
-             *
-             * These are deliberately modest so the
-             * overall geometry remains circular.
-             */
-
-            var wobble =
-                Math.sin(
-                    angle * 3 +
-                    index * 1.7 +
-                    time * 0.0011
-                ) *
-                5;
-
-
-            var wobble2 =
-                Math.sin(
-                    angle * 5 -
-                    index * 0.9 +
-                    time * 0.00073
-                ) *
-                2.5;
-
-
-            var radius =
-                baseRadius +
-                wobble +
-                wobble2;
-
-
-            points.push({
-
-                x:
-                    center.x +
-                    Math.cos(
-                        angle
-                    ) *
-                    radius,
-
-                y:
-                    center.y +
-                    Math.sin(
-                        angle
-                    ) *
-                    radius
-
-            });
-
+            return NODE_RADIUS;
         }
-
-
-        return points;
-
-    }
-
-
-    /*
-     * ==================================================
-     * STRING FRAME
-     * ==================================================
-     */
-
-    function renderString(
-        string,
-        progress,
-        time
-    ) {
-
-        var sourcePoints =
-            string.field.path.map(
-                toSVGPoint
-            );
-
-
-        var targetPoints =
-            createTargetPoints(
-                stringStateCenter(
-                    string
-                ),
-                sourcePoints.length,
-                string.index,
-                time
-            );
-
-
-        /*
-         * Keep the same number of points on both
-         * sides of the interpolation.
-         */
-
-        var amount =
-            easeInOutCubic(
-                progress
-            );
-
-
-        var points = [];
-
-
-        for (
-            var i = 0;
-            i < sourcePoints.length;
-            i++
-        ) {
-
-            points.push({
-
-                x:
-                    lerp(
-                        sourcePoints[i].x,
-                        targetPoints[i].x,
-                        amount
-                    ),
-
-                y:
-                    lerp(
-                        sourcePoints[i].y,
-                        targetPoints[i].y,
-                        amount
-                    )
-
-            });
-
-        }
-
-
-        /*
-         * Before the circular state is reached,
-         * use an open contour.
-         *
-         * Once active, close the path.
-         */
-
-        string.element.setAttribute(
-            "d",
-            createSmoothPath(
-                points,
-                progress > 0.96
+        var halfSide =
+            DIAMOND_SIZE / 2;
+        return (
+            halfSide /
+            (
+                Math.abs(ux) +
+                Math.abs(uy)
             )
         );
-
     }
-
-
-    function stringStateCenter(
-        string
+    function getClippedEdge(
+        source,
+        target
     ) {
-
-        return string._center;
-
-    }
-
-
-    /*
-     * ==================================================
-     * ACTIVE INTERSECTION STATE
-     * ==================================================
-     */
-
-    var activeIntersection =
-        null;
-
-
-    var animationFrame =
-        null;
-
-
-    var animationTime =
-        0;
-
-
-    /*
-     * ==================================================
-     * UPDATE STRING ANIMATION
-     * ==================================================
-     */
-
-    function animationLoop(
-        timestamp
-    ) {
-
-        animationTime =
-            timestamp;
-
-
+        var sourcePosition =
+            getPosition(
+                source
+            );
+        var targetPosition =
+            getPosition(
+                target
+            );
+        var dx =
+            targetPosition.x -
+            sourcePosition.x;
+        var dy =
+            targetPosition.y -
+            sourcePosition.y;
+        var length =
+            Math.hypot(
+                dx,
+                dy
+            );
         if (
-            !activeIntersection
+            length === 0
         ) {
-
-            animationFrame =
-                null;
-
-            return;
-
+            return {
+                x1:
+                    sourcePosition.x,
+                y1:
+                    sourcePosition.y,
+                x2:
+                    targetPosition.x,
+                y2:
+                    targetPosition.y
+            };
         }
-
-
-        var state =
-            activeIntersection
-                .stringState;
-
-
-        state.strings.forEach(
-            function (string) {
-
-                renderString(
-                    string,
-                    string.progress,
-                    timestamp
+        var ux =
+            dx / length;
+        var uy =
+            dy / length;
+        var sourceOffset =
+            nodeBoundaryDistance(
+                source,
+                dx,
+                dy
+            );
+        var targetOffset =
+            nodeBoundaryDistance(
+                target,
+                -dx,
+                -dy
+            );
+        var inset = 0.8;
+        sourceOffset += inset;
+        targetOffset += inset;
+        return {
+            x1:
+                sourcePosition.x +
+                ux *
+                sourceOffset,
+            y1:
+                sourcePosition.y +
+                uy *
+                sourceOffset,
+            x2:
+                targetPosition.x -
+                ux *
+                targetOffset,
+            y2:
+                targetPosition.y -
+                uy *
+                targetOffset
+        };
+    }
+    var edgeElements = [];
+    edges.forEach(function (edge) {
+        var sourceNode =
+            nodeMap[edge.source];
+        var targetNode =
+            nodeMap[edge.target];
+        var isFieldEdge =
+            !isWorkNode(sourceNode) &&
+            !isWorkNode(targetNode);
+        var line =
+            createElement(
+                "line",
+                {
+                    class:
+                        "research-edge" +
+                        (
+                            isFieldEdge ?
+                                " is-field-edge" :
+                                ""
+                        )
+                }
+            );
+        edgeLayer.appendChild(
+            line
+        );
+        edgeElements.push({
+            data:
+                edge,
+            element:
+                line
+        });
+    });
+    var nodeElements = [];
+    nodes.forEach(function (node) {
+        var group =
+            createElement(
+                "g",
+                {
+                    class:
+                        "research-node " +
+                        node.type
+                }
+            );
+        group.dataset.nodeId =
+            node.id;
+        if (
+            isWorkNode(node)
+        ) {
+            group.classList.add(
+                "is-project"
+            );
+        }
+        var shape;
+        if (
+            isWorkNode(node)
+        ) {
+            shape =
+                createElement(
+                    "rect",
+                    {
+                        class:
+                            "node-shape",
+                        x:
+                            -DIAMOND_SIZE / 2,
+                        y:
+                            -DIAMOND_SIZE / 2,
+                        width:
+                            DIAMOND_SIZE,
+                        height:
+                            DIAMOND_SIZE,
+                        transform:
+                            "rotate(45)"
+                    }
                 );
-
+        } else {
+            shape =
+                createElement(
+                    "circle",
+                    {
+                        class:
+                            "node-shape",
+                        cx: 0,
+                        cy: 0,
+                        r:
+                            NODE_RADIUS
+                    }
+                );
+        }
+        var hoverShape;
+        if (
+            isWorkNode(node)
+        ) {
+            hoverShape =
+                createElement(
+                    "rect",
+                    {
+                        class:
+                            "node-hover-shape",
+                        x:
+                            -DIAMOND_SIZE / 2,
+                        y:
+                            -DIAMOND_SIZE / 2,
+                        width:
+                            DIAMOND_SIZE,
+                        height:
+                            DIAMOND_SIZE,
+                        transform:
+                            "rotate(45)"
+                    }
+                );
+        } else {
+            hoverShape =
+                createElement(
+                    "circle",
+                    {
+                        class:
+                            "node-hover-shape",
+                        cx: 0,
+                        cy: 0,
+                        r:
+                            NODE_RADIUS
+                    }
+                );
+        }
+        group.appendChild(
+            hoverShape
+        );
+        group.appendChild(
+            shape
+        );
+        nodeLayer.appendChild(
+            group
+        );
+        var labelGroup =
+            createElement(
+                "g",
+                {
+                    class:
+                        "research-label-group"
+                }
+            );
+        var backdrop =
+            createElement(
+                "rect",
+                {
+                    class:
+                        "research-label-backdrop",
+                    rx: 3,
+                    ry: 3
+                }
+            );
+        var label =
+            createElement(
+                "text",
+                {
+                    class:
+                        "research-label",
+                    "text-anchor":
+                        "middle"
+                }
+            );
+        if (
+            !isWorkNode(node)
+        ) {
+            label.textContent =
+                node.name;
+        }
+        labelGroup.appendChild(
+            backdrop
+        );
+        labelGroup.appendChild(
+            label
+        );
+        var projectHint =
+            null;
+        if (
+            isWorkNode(node)
+        ) {
+            projectHint =
+                createElement(
+                    "text",
+                    {
+                        class:
+                            "research-label " +
+                            "research-project-hint",
+                        "text-anchor":
+                            "middle"
+                    }
+                );
+            projectHint.textContent =
+                "Click to explore related projects";
+            labelGroup.appendChild(
+                projectHint
+            );
+        }
+        labelLayer.appendChild(
+            labelGroup
+        );
+        nodeElements.push({
+            data: node,
+            group: group,
+            shape: shape,
+            hoverShape: hoverShape,
+            labelGroup: labelGroup,
+            backdrop: backdrop,
+            label: label,
+            projectHint: projectHint,
+            dragging: false,
+            isHovered: false,
+            pointerDownPosition: null,
+            vx: 0,
+            vy: 0
+        });
+    });
+    function updateEdges() {
+        edgeElements.forEach(
+            function (item) {
+                var source =
+                    nodeMap[
+                    item.data.source
+                    ];
+                var target =
+                    nodeMap[
+                    item.data.target
+                    ];
+                var clipped =
+                    getClippedEdge(
+                        source,
+                        target
+                    );
+                item.element.setAttribute(
+                    "x1",
+                    clipped.x1
+                );
+                item.element.setAttribute(
+                    "y1",
+                    clipped.y1
+                );
+                item.element.setAttribute(
+                    "x2",
+                    clipped.x2
+                );
+                item.element.setAttribute(
+                    "y2",
+                    clipped.y2
+                );
             }
         );
-
-
-        animationFrame =
-            requestAnimationFrame(
-                animationLoop
-            );
-
     }
-
-
-    function startAnimation() {
-
-        if (
-            animationFrame !== null
-        ) {
-            return;
-        }
-
-
-        animationFrame =
-            requestAnimationFrame(
-                animationLoop
-            );
-
-    }
-
-
-    function stopAnimation() {
-
-        if (
-            animationFrame !== null
-        ) {
-
-            cancelAnimationFrame(
-                animationFrame
-            );
-
-            animationFrame =
-                null;
-
-        }
-
-    }
-
-
-    /*
-     * ==================================================
-     * ACTIVATE
-     * ==================================================
-     */
-
-    function activateIntersection(
+    function positionLabel(
         item
     ) {
-
-        /*
-         * If another intersection is active,
-         * restore it first.
-         */
-
-        if (
-            activeIntersection &&
-            activeIntersection !== item
-        ) {
-
-            finishDeactivate(
-                activeIntersection
+        var position =
+            getPosition(
+                item.data
             );
-
-        }
-
-
-        activeIntersection =
-            item;
-
-
-        /*
-         * Field tags.
-         */
-
-        Object.keys(
-            fieldTags
-        ).forEach(
-            function (fieldId) {
-
-                var tag =
-                    fieldTags[fieldId];
-
-
-                tag.classList.remove(
-                    "is-dimmed"
+        var candidates = [
+            {
+                x:
+                    position.x,
+                y:
+                    position.y - 25
+            },
+        ];
+        var best =
+            candidates[0];
+        var bestScore =
+            Infinity;
+        candidates.forEach(
+            function (candidate) {
+                var score =
+                    0;
+                nodes.forEach(
+                    function (other) {
+                        if (
+                            other.id ===
+                            item.data.id
+                        ) {
+                            return;
+                        }
+                        var otherPosition =
+                            getPosition(
+                                other
+                            );
+                        var distance =
+                            Math.hypot(
+                                candidate.x -
+                                otherPosition.x,
+                                candidate.y -
+                                otherPosition.y
+                            );
+                        if (
+                            distance < 55
+                        ) {
+                            score +=
+                                55 -
+                                distance;
+                        }
+                    }
                 );
-
-
-                tag.classList.remove(
-                    "is-intersection-field"
-                );
-
-
                 if (
-                    item.data.fields.includes(
-                        fieldId
-                    )
+                    score <
+                    bestScore
                 ) {
-
-                    tag.classList.add(
-                        "is-intersection-field"
-                    );
-
-                } else {
-
-                    tag.classList.add(
-                        "is-dimmed"
-                    );
-
+                    bestScore =
+                        score;
+                    best =
+                        candidate;
                 }
-
             }
         );
-
-
-        /*
-         * Contours.
-         */
-
-        Object.keys(
-            contourElements
-        ).forEach(
-            function (fieldId) {
-
-                var contour =
-                    contourElements[
-                        fieldId
-                    ];
-
-
-                contour.element.classList.remove(
-                    "is-highlighted"
+        item.label.setAttribute(
+            "x",
+            best.x
+        );
+        item.label.setAttribute(
+            "y",
+            best.y
+        );
+        if (
+            item.projectHint
+        ) {
+            item.projectHint.setAttribute(
+                "x",
+                best.x
+            );
+            item.projectHint.setAttribute(
+                "y",
+                best.y
+            );
+        }
+        var labelBox =
+            item.label.getBBox();
+        if (
+            item.projectHint
+        ) {
+            var hintBox =
+                item.projectHint.getBBox();
+            var left =
+                Math.min(
+                    labelBox.x,
+                    hintBox.x
                 );
-
-
-                contour.element.classList.remove(
-                    "is-dimmed"
+            var top =
+                Math.min(
+                    labelBox.y,
+                    hintBox.y
                 );
-
-
-                contour.element.classList.remove(
+            var right =
+                Math.max(
+                    labelBox.x +
+                    labelBox.width,
+                    hintBox.x +
+                    hintBox.width
+                );
+            var bottom =
+                Math.max(
+                    labelBox.y +
+                    labelBox.height,
+                    hintBox.y +
+                    hintBox.height
+                );
+            item.backdrop.setAttribute(
+                "x",
+                left - 5
+            );
+            item.backdrop.setAttribute(
+                "y",
+                top - 3
+            );
+            item.backdrop.setAttribute(
+                "width",
+                right -
+                left +
+                10
+            );
+            item.backdrop.setAttribute(
+                "height",
+                bottom -
+                top +
+                6
+            );
+        } else {
+            item.backdrop.setAttribute(
+                "x",
+                labelBox.x - 5
+            );
+            item.backdrop.setAttribute(
+                "y",
+                labelBox.y - 3
+            );
+            item.backdrop.setAttribute(
+                "width",
+                labelBox.width + 10
+            );
+            item.backdrop.setAttribute(
+                "height",
+                labelBox.height + 6
+            );
+        }
+    }
+    function pointInsideBox(
+        x,
+        y,
+        box
+    ) {
+        return (
+            x >= box.x &&
+            x <=
+            box.x +
+            box.width &&
+            y >= box.y &&
+            y <=
+            box.y +
+            box.height
+        );
+    }
+    function pointToSegmentDistance(
+        px,
+        py,
+        x1,
+        y1,
+        x2,
+        y2
+    ) {
+        var dx =
+            x2 - x1;
+        var dy =
+            y2 - y1;
+        if (
+            dx === 0 &&
+            dy === 0
+        ) {
+            return Math.hypot(
+                px - x1,
+                py - y1
+            );
+        }
+        var t =
+            (
+                (px - x1) * dx +
+                (py - y1) * dy
+            ) /
+            (
+                dx * dx +
+                dy * dy
+            );
+        t =
+            Math.max(
+                0,
+                Math.min(
+                    1,
+                    t
+                )
+            );
+        var x =
+            x1 +
+            t * dx;
+        var y =
+            y1 +
+            t * dy;
+        return Math.hypot(
+            px - x,
+            py - y
+        );
+    }
+    function segmentsIntersect(
+        x1,
+        y1,
+        x2,
+        y2,
+        x3,
+        y3,
+        x4,
+        y4
+    ) {
+        function direction(
+            ax,
+            ay,
+            bx,
+            by,
+            cx,
+            cy
+        ) {
+            return (
+                (cx - ax) *
+                (by - ay)
+                -
+                (cy - ay) *
+                (bx - ax)
+            );
+        }
+        var d1 =
+            direction(
+                x3,
+                y3,
+                x4,
+                y4,
+                x1,
+                y1
+            );
+        var d2 =
+            direction(
+                x3,
+                y3,
+                x4,
+                y4,
+                x2,
+                y2
+            );
+        var d3 =
+            direction(
+                x1,
+                y1,
+                x2,
+                y2,
+                x3,
+                y3
+            );
+        var d4 =
+            direction(
+                x1,
+                y1,
+                x2,
+                y2,
+                x4,
+                y4
+            );
+        return (
+            (
+                (d1 > 0 && d2 < 0) ||
+                (d1 < 0 && d2 > 0)
+            )
+            &&
+            (
+                (d3 > 0 && d4 < 0) ||
+                (d3 < 0 && d4 > 0)
+            )
+        );
+    }
+    function lineIntersectsBox(
+        x1,
+        y1,
+        x2,
+        y2,
+        box
+    ) {
+        if (
+            pointInsideBox(
+                x1,
+                y1,
+                box
+            ) ||
+            pointInsideBox(
+                x2,
+                y2,
+                box
+            )
+        ) {
+            return true;
+        }
+        var left =
+            box.x;
+        var right =
+            box.x +
+            box.width;
+        var top =
+            box.y;
+        var bottom =
+            box.y +
+            box.height;
+        return (
+            segmentsIntersect(
+                x1,
+                y1,
+                x2,
+                y2,
+                left,
+                top,
+                right,
+                top
+            )
+            ||
+            segmentsIntersect(
+                x1,
+                y1,
+                x2,
+                y2,
+                right,
+                top,
+                right,
+                bottom
+            )
+            ||
+            segmentsIntersect(
+                x1,
+                y1,
+                x2,
+                y2,
+                right,
+                bottom,
+                left,
+                bottom
+            )
+            ||
+            segmentsIntersect(
+                x1,
+                y1,
+                x2,
+                y2,
+                left,
+                bottom,
+                left,
+                top
+            )
+        );
+    }
+    function clearObscured() {
+        nodeElements.forEach(
+            function (item) {
+                item.group.classList.remove(
                     "is-obscured"
                 );
-
-
-                if (
-                    item.data.fields.includes(
-                        fieldId
-                    )
-                ) {
-
-                    contour.element.classList.add(
-                        "is-detaching"
-                    );
-
-                } else {
-
-                    contour.element.classList.add(
-                        "is-obscured"
-                    );
-
-                }
-
             }
         );
-
-
-        /*
-         * Intersection visual state.
-         */
-
-        item.group.classList.add(
-            "is-active"
+        edgeElements.forEach(
+            function (item) {
+                item.element.classList.remove(
+                    "is-obscured"
+                );
+            }
         );
-
-
+    }
+    function dimBehindLabel(
+        item
+    ) {
+        clearObscured();
+        var textBoxes = [];
+        if (
+            item.label &&
+            item.label.textContent.trim() !== ""
+        ) {
+            textBoxes.push(
+                item.label.getBBox()
+            );
+        }
+        if (
+            item.projectHint &&
+            item.projectHint.textContent.trim() !== ""
+        ) {
+            textBoxes.push(
+                item.projectHint.getBBox()
+            );
+        }
+        if (
+            textBoxes.length === 0
+        ) {
+            return;
+        }
+        nodeElements.forEach(
+            function (other) {
+                if (
+                    other === item
+                ) {
+                    return;
+                }
+                var position =
+                    getPosition(
+                        other.data
+                    );
+                var overlaps =
+                    textBoxes.some(
+                        function (box) {
+                            return pointInsideBox(
+                                position.x,
+                                position.y,
+                                box
+                            );
+                        }
+                    );
+                if (
+                    overlaps
+                ) {
+                    other.group.classList.add(
+                        "is-obscured"
+                    );
+                }
+            }
+        );
+        edgeElements.forEach(
+            function (edge) {
+                var source =
+                    getPosition(
+                        nodeMap[
+                        edge.data.source
+                        ]
+                    );
+                var target =
+                    getPosition(
+                        nodeMap[
+                        edge.data.target
+                        ]
+                    );
+                var overlaps =
+                    textBoxes.some(
+                        function (box) {
+                            return lineIntersectsBox(
+                                source.x,
+                                source.y,
+                                target.x,
+                                target.y,
+                                box
+                            );
+                        }
+                    );
+                if (
+                    overlaps
+                ) {
+                    edge.element.classList.add(
+                        "is-obscured"
+                    );
+                }
+            }
+        );
+    }
+    function showHover(
+        item
+    ) {
+        nodeElements.forEach(
+            function (other) {
+                if (
+                    other === item
+                ) {
+                    return;
+                }
+                other.group.classList.remove(
+                    "is-hovered"
+                );
+                other.label.classList.remove(
+                    "is-visible"
+                );
+                other.backdrop.classList.remove(
+                    "is-visible"
+                );
+                if (
+                    other.projectHint
+                ) {
+                    other.projectHint.classList.remove(
+                        "is-visible"
+                    );
+                }
+            }
+        );
+        item.group.classList.add(
+            "is-hovered"
+        );
         item.label.classList.add(
             "is-visible"
         );
-
-
-        /*
-         * Work count.
-         */
-
-        var count =
-            countMatchingProjects(
-                item.data.fields
-            );
-
-
-        workCount.textContent =
-            "[" +
-            count +
-            "] " +
-            (
-                count === 1
-                    ? "work"
-                    : "works"
-            );
-
-
-        workCount.classList.add(
+        item.backdrop.classList.add(
             "is-visible"
         );
-
-
-        /*
-         * Prepare strings.
-         */
-
-        item.stringState.strings.forEach(
-            function (string) {
-
-                /*
-                 * If the user re-enters while
-                 * reversing, continue from the
-                 * current position.
-                 */
-
-                string._center =
-                    item.point;
-
-            }
+        if (
+            item.projectHint
+        ) {
+            item.projectHint.classList.add(
+                "is-visible"
+            );
+        }
+        dimBehindLabel(
+            item
         );
-
-
-        /*
-         * Show strings.
-         */
-
-        item.stringState.group.style.opacity =
-            "1";
-
-
-        /*
-         * Start animation immediately.
-         *
-         * The strings are still at progress 0,
-         * so they initially coincide with their
-         * passive contours.
-         */
-
-        startAnimation();
-
-        animateProgress(
-            item,
-            1
+        showFieldIndicator(
+            item.data
         );
-
+        showWorkCount(
+            item.data
+        );
     }
-
-
-    /*
-     * ==================================================
-     * DEACTIVATE
-     * ==================================================
-     */
-
-    function deactivateIntersection(
+    function hideHover(
         item
     ) {
-
-        /*
-         * Ignore stale mouseleave events.
-         */
-
-        if (
-            activeIntersection !== item
-        ) {
-            return;
-        }
-
-
-        /*
-         * Keep animation running while
-         * strings morph back.
-         */
-
-        animateProgress(
-            item,
-            0,
-            function () {
-
-                finishDeactivate(
-                    item
-                );
-
-            }
-        );
-
-    }
-
-
-    /*
-     * ==================================================
-     * FINISH DEACTIVATION
-     * ==================================================
-     */
-
-    function finishDeactivate(
-        item
-    ) {
-
-        if (
-            activeIntersection === item
-        ) {
-
-            activeIntersection =
-                null;
-
-        }
-
-
-        item.stringState.strings.forEach(
-            function (string) {
-
-                string.progress =
-                    0;
-
-                string.element.setAttribute(
-                    "d",
-                    createSmoothPath(
-                        string.field.path.map(
-                            toSVGPoint
-                        ),
-                        false
-                    )
-                );
-
-            }
-        );
-
-
-        item.stringState.group.style.opacity =
-            "0";
-
-
-        /*
-         * Restore contours.
-         */
-
-        Object.keys(
-            contourElements
-        ).forEach(
-            function (fieldId) {
-
-                var contour =
-                    contourElements[
-                        fieldId
-                    ];
-
-
-                contour.element.classList.remove(
-                    "is-detaching"
-                );
-
-
-                contour.element.classList.remove(
-                    "is-obscured"
-                );
-
-
-                contour.element.classList.remove(
-                    "is-dimmed"
-                );
-
-
-                contour.element.classList.remove(
-                    "is-highlighted"
-                );
-
-            }
-        );
-
-
-        /*
-         * Restore tags.
-         */
-
-        Object.keys(
-            fieldTags
-        ).forEach(
-            function (fieldId) {
-
-                fieldTags[fieldId]
-                    .classList.remove(
-                        "is-intersection-field"
-                    );
-
-                fieldTags[fieldId]
-                    .classList.remove(
-                        "is-dimmed"
-                    );
-
-            }
-        );
-
-
-        /*
-         * Restore node.
-
-         */
-
         item.group.classList.remove(
-            "is-active"
+            "is-hovered"
         );
-
-
         item.label.classList.remove(
             "is-visible"
         );
-
-
-        /*
-         * Work count.
-
-         */
-
-        workCount.classList.remove(
+        item.backdrop.classList.remove(
             "is-visible"
         );
-
-
-        /*
-         * Stop animation only when no
-         * intersection is active.
-         */
-
         if (
-            !activeIntersection
+            item.projectHint
         ) {
-
-            stopAnimation();
-
+            item.projectHint.classList.remove(
+                "is-visible"
+            );
         }
-
+        clearObscured();
+        hideFieldIndicator();
+        hideWorkCount();
     }
-
-
-    /*
-     * ==================================================
-     * PROGRESS ANIMATION
-     * ==================================================
-     */
-
-    function animateProgress(
-        item,
-        target,
-        onComplete
+    var activeDrag =
+        null;
+    function getPointerPosition(
+        event
     ) {
-
-        var strings =
-            item.stringState.strings;
-
-
-        if (
-            strings.length === 0
-        ) {
-
-            if (onComplete) {
-                onComplete();
-            }
-
-            return;
-
-        }
-
-
-        /*
-         * Each string retains its own progress.
-         */
-
-        var startValues =
-            strings.map(
-                function (string) {
-
-                    return string.progress;
-
-                }
+        var rect =
+            svg.getBoundingClientRect();
+        var scale =
+            Math.min(
+                rect.width /
+                SVG_WIDTH,
+                rect.height /
+                SVG_HEIGHT
             );
-
-
-        var maxDifference =
-            0;
-
-
-        startValues.forEach(
-            function (value) {
-
-                maxDifference =
-                    Math.max(
-                        maxDifference,
-                        Math.abs(
-                            target -
-                            value
-                        )
-                    );
-
-            }
-        );
-
-
-        /*
-         * Very quick if already at the
-         * requested state.
-         */
-
-        if (
-            maxDifference < 0.001
-        ) {
-
-            strings.forEach(
-                function (string) {
-
-                    string.progress =
-                        target;
-
-                }
-            );
-
-
-            if (onComplete) {
-                onComplete();
-            }
-
-
-            return;
-
-        }
-
-
-        var duration =
-            target > 0
-                ? 900
-                : 700;
-
-
-        var startTime =
-            performance.now();
-
-
-        /*
-         * The progress animation itself does
-         * not use the continuously changing
-         * circular coordinates as its clock.
-         *
-         * That prevents the target from moving
-         * unpredictably during the transition.
-         */
-
-        function step(
-            timestamp
-        ) {
-
-            /*
-             * Abort this particular transition
-             * if another intersection has become
-             * active.
-             */
-
-            if (
-                activeIntersection &&
-                activeIntersection !== item &&
-                target > 0
-            ) {
-
-                return;
-
-            }
-
-
-            var elapsed =
-                timestamp -
-                startTime;
-
-
-            var ratio =
-                clamp(
-                    elapsed /
-                    duration,
-                    0,
-                    1
-                );
-
-
-            var eased =
-                easeInOutCubic(
-                    ratio
-                );
-
-
-            strings.forEach(
-                function (string, index) {
-
-                    string.progress =
-                        lerp(
-                            startValues[index],
-                            target,
-                            eased
-                        );
-
-                }
-            );
-
-
-            /*
-             * Render immediately.
-             */
-
-            strings.forEach(
-                function (string) {
-
-                    renderString(
-                        string,
-                        string.progress,
-                        timestamp
-                    );
-
-                }
-            );
-
-
-            if (
-                ratio < 1
-            ) {
-
-                requestAnimationFrame(
-                    step
-                );
-
-            } else {
-
-                strings.forEach(
-                    function (string) {
-
-                        string.progress =
-                            target;
-
-                    }
-                );
-
-
-                if (onComplete) {
-                    onComplete();
-                }
-
-            }
-
-        }
-
-
-        requestAnimationFrame(
-            step
-        );
-
+        var renderedWidth =
+            SVG_WIDTH *
+            scale;
+        var renderedHeight =
+            SVG_HEIGHT *
+            scale;
+        var offsetX =
+            (
+                rect.width -
+                renderedWidth
+            ) / 2;
+        var offsetY =
+            (
+                rect.height -
+                renderedHeight
+            ) / 2;
+        return {
+            x:
+                (
+                    event.clientX -
+                    rect.left -
+                    offsetX
+                ) /
+                scale,
+            y:
+                (
+                    event.clientY -
+                    rect.top -
+                    offsetY
+                ) /
+                scale
+        };
     }
-
-
-    /*
-     * ==================================================
-     * INITIAL STRING SETUP
-     * ==================================================
-     */
-
-    intersectionElements.forEach(
+    nodeElements.forEach(
         function (item) {
-
-            item.stringState.strings.forEach(
-                function (string) {
-
-                    string._center =
-                        item.point;
-
-
-                    string.progress =
-                        0;
-
-
-                    string.element.setAttribute(
-                        "d",
-                        createSmoothPath(
-                            string.field.path.map(
-                                toSVGPoint
-                            ),
-                            false
-                        )
-                    );
-
+            item.group.addEventListener(
+                "mouseenter",
+                function () {
+                    item.isHovered = true;
+                    if (
+                        !item.dragging
+                    ) {
+                        showHover(
+                            item
+                        );
+                    }
                 }
             );
-
+            item.group.addEventListener(
+                "mouseleave",
+                function () {
+                    item.isHovered = false;
+                    if (
+                        !item.dragging
+                    ) {
+                        hideHover(
+                            item
+                        );
+                    }
+                }
+            );
+            item.group.addEventListener(
+                "pointerdown",
+                function (event) {
+                    event.preventDefault();
+                    activeDrag =
+                        item;
+                    item.dragging =
+                        false;
+                    item.pointerDownPosition = {
+                        x:
+                            event.clientX,
+                        y:
+                            event.clientY
+                    };
+                    item.group.setPointerCapture(
+                        event.pointerId
+                    );
+                }
+            );
+            item.group.addEventListener(
+                "pointermove",
+                function (event) {
+                    if (
+                        activeDrag !==
+                        item
+                    ) {
+                        return;
+                    }
+                    var start =
+                        item.pointerDownPosition;
+                    var movement =
+                        Math.hypot(
+                            event.clientX -
+                            start.x,
+                            event.clientY -
+                            start.y
+                        );
+                    if (
+                        movement > 4 &&
+                        !item.dragging
+                    ) {
+                        item.dragging =
+                            true;
+                        item.vx = 0;
+                        item.vy = 0;
+                        hideHover(
+                            item
+                        );
+                    }
+                    if (
+                        !item.dragging
+                    ) {
+                        return;
+                    }
+                    var pointer =
+                        getPointerPosition(
+                            event
+                        );
+                    item.data.x =
+                        clamp(
+                            pointer.x /
+                            SVG_WIDTH *
+                            100,
+                            2,
+                            98
+                        );
+                    item.data.y =
+                        clamp(
+                            pointer.y /
+                            SVG_HEIGHT *
+                            100,
+                            4,
+                            94
+                        );
+                    updatePositions();
+                }
+            );
+            item.group.addEventListener(
+                "pointerup",
+                function (event) {
+                    if (
+                        activeDrag !==
+                        item
+                    ) {
+                        return;
+                    }
+                    activeDrag =
+                        null;
+                    try {
+                        item.group.releasePointerCapture(
+                            event.pointerId
+                        );
+                    } catch (error) { }
+                    if (
+                        !item.dragging &&
+                        isWorkNode(item.data)
+                    ) {
+                        window.openProjectsPanel(
+                            item.data.fields || []
+                        );
+                    }
+                    item.dragging =
+                        false;
+                    startForceSimulation();
+                    clearObscured();
+                    if (
+                        item.isHovered
+                    ) {
+                        showHover(
+                            item
+                        );
+                    }
+                }
+            );
+            item.group.addEventListener(
+                "pointercancel",
+                function () {
+                    activeDrag =
+                        null;
+                    item.dragging =
+                        false;
+                    clearObscured();
+                    if (
+                        item.isHovered
+                    ) {
+                        showHover(
+                            item
+                        );
+                    }
+                }
+            );
         }
     );
-
-
-    /*
-     * ==================================================
-     * RESIZE
-     * ==================================================
-     */
-
+    var forceAnimation = null;
+    var forceRunning = false;
+    var FORCE_SETTLE_THRESHOLD = 0.08;
+    var FORCE_SETTLE_FRAMES = 12;
+    var forceStableFrames = 0;
+    function getNodeElement(nodeId) {
+        return nodeElements.find(
+            function (item) {
+                return (
+                    item.data.id ===
+                    nodeId
+                );
+            }
+        );
+    }
+    function applyNodeRepulsion() {
+        var config =
+            RESEARCH_LANDSCAPE_FORCE;
+        for (
+            var i = 0;
+            i < nodeElements.length;
+            i++
+        ) {
+            for (
+                var j = i + 1;
+                j < nodeElements.length;
+                j++
+            ) {
+                var a =
+                    nodeElements[i];
+                var b =
+                    nodeElements[j];
+                if (
+                    a.dragging ||
+                    b.dragging
+                ) {
+                    continue;
+                }
+                var aPosition =
+                    getPosition(
+                        a.data
+                    );
+                var bPosition =
+                    getPosition(
+                        b.data
+                    );
+                var dx =
+                    aPosition.x -
+                    bPosition.x;
+                var dy =
+                    aPosition.y -
+                    bPosition.y;
+                var distance =
+                    Math.hypot(
+                        dx,
+                        dy
+                    );
+                if (
+                    distance < 0.001
+                ) {
+                    distance = 0.001;
+                }
+                if (
+                    distance >=
+                    config.minDistance
+                ) {
+                    continue;
+                }
+                var strength =
+                    (
+                        config.minDistance -
+                        distance
+                    ) /
+                    config.minDistance;
+                strength *=
+                    config.repulsion;
+                var ux =
+                    dx /
+                    distance;
+                var uy =
+                    dy /
+                    distance;
+                a.vx +=
+                    ux *
+                    strength;
+                a.vy +=
+                    uy *
+                    strength;
+                b.vx -=
+                    ux *
+                    strength;
+                b.vy -=
+                    uy *
+                    strength;
+            }
+        }
+    }
+    function applyEdgeAttraction() {
+        var config =
+            RESEARCH_LANDSCAPE_FORCE;
+        edges.forEach(
+            function (edge) {
+                var source =
+                    getNodeElement(
+                        edge.source
+                    );
+                var target =
+                    getNodeElement(
+                        edge.target
+                    );
+                if (
+                    !source ||
+                    !target ||
+                    source.dragging ||
+                    target.dragging
+                ) {
+                    return;
+                }
+                var sourcePosition =
+                    getPosition(
+                        source.data
+                    );
+                var targetPosition =
+                    getPosition(
+                        target.data
+                    );
+                var dx =
+                    targetPosition.x -
+                    sourcePosition.x;
+                var dy =
+                    targetPosition.y -
+                    sourcePosition.y;
+                var distance =
+                    Math.hypot(
+                        dx,
+                        dy
+                    );
+                if (
+                    distance < 0.001
+                ) {
+                    return;
+                }
+                var difference =
+                    distance -
+                    config.idealEdgeLength;
+                var force =
+                    difference *
+                    config.attraction;
+                force =
+                    clamp(
+                        force,
+                        -1.5,
+                        1.5
+                    );
+                var ux =
+                    dx /
+                    distance;
+                var uy =
+                    dy /
+                    distance;
+                source.vx +=
+                    ux *
+                    force;
+                source.vy +=
+                    uy *
+                    force;
+                target.vx -=
+                    ux *
+                    force;
+                target.vy -=
+                    uy *
+                    force;
+            }
+        );
+    }
+    function updateForceSimulation() {
+        var config =
+            RESEARCH_LANDSCAPE_FORCE;
+        applyNodeRepulsion();
+        applyEdgeAttraction();
+        var totalMovement =
+            0;
+        nodeElements.forEach(
+            function (item) {
+                if (
+                    item.dragging
+                ) {
+                    item.vx = 0;
+                    item.vy = 0;
+                    return;
+                }
+                item.vx *= config.damping;
+                item.vy *= config.damping;
+                item.vx = clamp(item.vx, -2, 2);
+                item.vy = clamp(item.vy, -2, 2);
+                var movement =
+                    Math.hypot(
+                        item.vx,
+                        item.vy
+                    );
+                totalMovement +=
+                    movement;
+                var position =
+                    getPosition(
+                        item.data
+                    );
+                var newX =
+                    position.x +
+                    item.vx;
+                var newY =
+                    position.y +
+                    item.vy;
+                newX =
+                    clamp(
+                        newX,
+                        20,
+                        SVG_WIDTH - 20
+                    );
+                newY =
+                    clamp(
+                        newY,
+                        20,
+                        SVG_HEIGHT - 20
+                    );
+                item.data.x =
+                    newX /
+                    SVG_WIDTH *
+                    100;
+                item.data.y =
+                    newY /
+                    SVG_HEIGHT *
+                    100;
+            }
+        );
+        updatePositions();
+        if (
+            totalMovement <
+            FORCE_SETTLE_THRESHOLD
+        ) {
+            forceStableFrames++;
+        } else {
+            forceStableFrames = 0;
+        }
+        if (
+            forceStableFrames >=
+            FORCE_SETTLE_FRAMES
+        ) {
+            stopForceSimulation();
+        }
+    }
+    function startForceSimulation() {
+        if (
+            !RESEARCH_LANDSCAPE_FORCE.enabled
+        ) {
+            return;
+        }
+        if (
+            forceRunning
+        ) {
+            return;
+        }
+        forceRunning =
+            true;
+        forceStableFrames =
+            0;
+        forceAnimation =
+            requestAnimationFrame(
+                forceLoop
+            );
+    }
+    function stopForceSimulation() {
+        forceRunning =
+            false;
+        forceStableFrames =
+            0;
+        if (
+            forceAnimation !== null
+        ) {
+            cancelAnimationFrame(
+                forceAnimation
+            );
+            forceAnimation =
+                null;
+        }
+        nodeElements.forEach(
+            function (item) {
+                item.vx = 0;
+                item.vy = 0;
+            }
+        );
+    }
+    function forceLoop() {
+        if (
+            !forceRunning
+        ) {
+            return;
+        }
+        var iterations =
+            RESEARCH_LANDSCAPE_FORCE
+                .iterationsPerFrame;
+        for (
+            var i = 0;
+            i < iterations;
+            i++
+        ) {
+            updateForceSimulation();
+            if (
+                !forceRunning
+            ) {
+                return;
+            }
+        }
+        forceAnimation =
+            requestAnimationFrame(
+                forceLoop
+            );
+    }
+    updatePositions();
+    startForceSimulation();
+    function updatePositions() {
+        nodeElements.forEach(
+            function (item) {
+                var position =
+                    getPosition(
+                        item.data
+                    );
+                item.group.setAttribute(
+                    "transform",
+                    "translate(" +
+                    position.x +
+                    " " +
+                    position.y +
+                    ")"
+                );
+                positionLabel(
+                    item
+                );
+            }
+        );
+        updateEdges();
+    }
     window.addEventListener(
         "resize",
         function () {
-
-            /*
-             * SVG coordinates are viewBox based,
-             * so no positional recalculation is
-             * necessary.
-             */
-
+            updatePositions();
+            nodeElements.forEach(
+                function (item) {
+                    if (
+                        item.group.classList.contains(
+                            "is-hovered"
+                        )
+                    ) {
+                        dimBehindLabel(
+                            item
+                        );
+                    }
+                }
+            );
         }
     );
-
-
+    updatePositions();
 })();

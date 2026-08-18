@@ -1,622 +1,219 @@
 .research-landscape {
-
     position: relative;
-
     width: 100%;
-
     height: min(620px, 68vh);
-
     min-height: 480px;
-
     overflow: hidden;
-
     background: transparent;
-
 }
-
-
-/* ==================================================
-   FIELD TAGS
-   ================================================== */
-
-.research-field-bar {
-
-    position: absolute;
-
-    top: 0;
-
-    left: 0;
-
-    right: 0;
-
-    z-index: 30;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    gap: 0.75rem;
-
-    padding:
-        0 0.15rem;
-
-    pointer-events: none;
-
-}
-
-
-.research-field-tag {
-
-    position: relative;
-
-    flex: 0 0 auto;
-
-    color: var(--muted);
-
-    font-family: var(--sans);
-
-    font-size: 0.68rem;
-
-    font-weight: 500;
-
-    letter-spacing: 0.01em;
-
-    line-height: 1.3;
-
-    white-space: nowrap;
-
-    cursor: default;
-
-    pointer-events: auto;
-
-    opacity: 0.62;
-
-    transition:
-        opacity 180ms ease,
-        color 180ms ease,
-        transform 180ms ease;
-
-}
-
-
-.research-field-tag::after {
-
-    content: "";
-
-    position: absolute;
-
-    left: 0;
-
-    right: 0;
-
-    bottom: -5px;
-
-    height: 1px;
-
-    background: var(--olive);
-
-    opacity: 0;
-
-    transform:
-        scaleX(0.4);
-
-    transition:
-        opacity 180ms ease,
-        transform 180ms ease;
-
-}
-
-
-.research-field-tag:hover,
-.research-field-tag.is-highlighted,
-.research-field-tag.is-intersection-field {
-
-    opacity: 1;
-
-    color: var(--olive);
-
-}
-
-
-.research-field-tag:hover::after,
-.research-field-tag.is-highlighted::after,
-.research-field-tag.is-intersection-field::after {
-
-    opacity: 0.7;
-
-    transform:
-        scaleX(1);
-
-}
-
-
-.research-field-tag.is-dimmed {
-
-    opacity: 0.16;
-
-}
-
-
-/* ==================================================
-   SVG
-   ================================================== */
-
 .research-landscape svg {
-
     display: block;
-
     width: 100%;
-
     height: 100%;
-
     overflow: visible;
-
     touch-action: none;
-
 }
-
-
-/* ==================================================
-   NORMAL CONTOURS
-   ================================================== */
-
-.research-contour {
-
+.research-edge {
     fill: none;
-
     stroke: var(--olive);
-
     stroke-width: 1.25;
-
-    stroke-opacity: 0.42;
-
+    stroke-opacity: 0.34;
     vector-effect: non-scaling-stroke;
-
     pointer-events: none;
-
     transition:
-        opacity 350ms ease,
-        stroke-opacity 300ms ease,
-        stroke-width 300ms ease;
-
+        opacity 180ms ease,
+        stroke-opacity 180ms ease;
 }
-
-
-.research-contour.exploring {
-
-    stroke-dasharray: none;
-
-    stroke-opacity: 0.46;
-
+.research-edge.is-field-edge {
+    stroke-dasharray: 4 3;
 }
-
-
-.research-contour.emerging {
-
-    stroke-dasharray: 5 5;
-
-    stroke-opacity: 0.30;
-
+.research-node {
+    cursor: grab;
+    touch-action: none;
 }
-
-
-.research-contour.is-highlighted {
-
-    stroke-opacity: 1;
-
-    stroke-width: 1.8;
-
+.research-node:active {
+    cursor: grabbing;
 }
-
-
-.research-contour.is-dimmed {
-
-    opacity: 0.14;
-
-}
-
-
-.research-contour.is-obscured {
-
-    opacity: 0.055;
-
-}
-
-
-/*
- * The participating passive contour fades
- * while its corresponding animated string
- * takes over.
- */
-
-.research-contour.is-detaching {
-
-    opacity: 0;
-
-}
-
-
-/* ==================================================
-   STRING LAYER
-   ================================================== */
-
-.research-string-layer {
-
-    pointer-events: none;
-
-}
-
-
-.research-string-group {
-
-    pointer-events: none;
-
-    opacity: 0;
-
-}
-
-
-.research-intersection-string {
-
-    fill: none;
-
-    stroke: var(--olive);
-
-    stroke-width: 1.15;
-
-    stroke-opacity: 0.76;
-
+.research-node .node-shape {
     vector-effect: non-scaling-stroke;
-
-    pointer-events: none;
-
-    /*
-     * No CSS transform is used here.
-     *
-     * The geometry itself is animated in JS.
-     */
-
-}
-
-
-.research-intersection-string.exploring {
-
-    stroke-dasharray: none;
-
-}
-
-
-.research-intersection-string.emerging {
-
-    stroke-dasharray: 4 4;
-
-    stroke-opacity: 0.55;
-
-}
-
-
-/*
- * Slight variation between strands.
- */
-
-.research-intersection-string:nth-child(2) {
-
-    stroke-opacity: 0.62;
-
-}
-
-
-.research-intersection-string:nth-child(3) {
-
-    stroke-opacity: 0.78;
-
-}
-
-
-.research-intersection-string:nth-child(4) {
-
-    stroke-opacity: 0.54;
-
-}
-
-
-/* ==================================================
-   INTERSECTION NODES
-   ================================================== */
-
-.research-intersection {
-
-    pointer-events: none;
-
-}
-
-
-.research-intersection-hit {
-
-    fill: transparent;
-
-    pointer-events: all;
-
-    cursor: pointer;
-
-}
-
-
-.research-intersection-shape {
-
-    fill: var(--paper);
-
-    stroke: var(--olive);
-
-    stroke-width: 1.3;
-
-    vector-effect: non-scaling-stroke;
-
-    transform-box: fill-box;
-
-    transform-origin: center;
-
     transition:
-        fill 220ms ease,
-        stroke-width 220ms ease,
-        transform 220ms ease;
-
+        opacity 180ms ease;
 }
-
-
-.research-intersection.is-active
-.research-intersection-shape {
-
+.research-node.exploring .node-shape {
     fill: var(--olive);
-
-    stroke-width: 1.8;
-
-    transform:
-        scale(1.15);
-
+    stroke: var(--olive);
+    stroke-width: 1.2;
 }
-
-
-/* ==================================================
-   INTERSECTION LABEL
-   ================================================== */
-
-.research-intersection-label {
-
-    fill: var(--muted);
-
-    font-family: var(--sans);
-
-    font-size: 14px;
-
-    font-weight: 500;
-
-    pointer-events: none;
-
-    opacity: 0;
-
-    transition:
-        opacity 220ms ease;
-
+.research-node.emerging .node-shape {
+    fill: var(--paper);
+    stroke: var(--olive);
+    stroke-width: 1.2;
 }
-
-
-.research-intersection-label.is-visible {
-
-    opacity: 1;
-
+.research-node.work .node-shape {
+    fill: var(--paper);
+    stroke: var(--olive);
+    stroke-width: 1.2;
 }
-
-
-/* ==================================================
-   WORK COUNT
-   ================================================== */
-
-.research-work-count {
-
+.research-field-indicator {
     position: absolute;
-
-    top: 0;
-
-    right: 0;
-
-    z-index: 31;
-
-    pointer-events: none;
-
-    color: var(--muted);
-
-    font-family: var(--sans);
-
-    font-size: 0.72rem;
-
-    font-weight: 500;
-
-    letter-spacing: 0.01em;
-
-    line-height: 1.3;
-
-    text-align: right;
-
-    opacity: 0;
-
-    transform:
-        translateX(10px);
-
-    transition:
-        opacity 220ms ease,
-        transform 220ms ease;
-
-}
-
-
-.research-work-count.is-visible {
-
-    opacity: 1;
-
-    transform:
-        translateX(0);
-
-}
-
-
-/* ==================================================
-   LEGEND
-   ================================================== */
-
-.research-landscape-legend {
-
+    top: 0.75rem;
+    left: 0;
+    z-index: 2;
     display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 1.15rem;
-
-    margin-top: 1.25rem;
-
+    flex-direction: column;
+    gap: 0.3rem;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-16px);
+    transition:
+        opacity 260ms ease,
+        transform 260ms ease;
+}
+.research-field-indicator.is-visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+.research-field-indicator.is-hidden-right {
+    opacity: 0;
+    transform: translateX(16px);
+}
+.research-field-indicator-item {
     color: var(--muted);
-
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+}
+.research-work-count {
+    position: absolute;
+    top: 0.9rem;
+    right: 0;
+    z-index: 2;
+    pointer-events: none;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+    text-align: right;
+    opacity: 0;
+    transform: translateX(16px);
+    transition:
+        opacity 260ms ease,
+        transform 260ms ease;
+}
+.research-work-count.is-visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+.research-work-count.is-hidden-left {
+    opacity: 0;
+    transform: translateX(-16px);
+}
+.node-hover-shape {
+    fill: none;
+    stroke: var(--olive);
+    stroke-width: 1.2;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+.research-node.is-hovered .node-hover-shape {
+    opacity: 0.30;
+    transform: scale(2);
+}
+.research-label-group {
+    pointer-events: none;
+}
+.research-label {
+    fill: var(--muted);
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0;
+    opacity: 0;
+    transition:
+        opacity 180ms ease;
+}
+.research-label.is-visible {
+    opacity: 1;
+}
+.research-label-backdrop {
+    fill-opacity: 0;
+    opacity: 0;
+    transition:
+        opacity 180ms ease;
+}
+.research-label-backdrop.is-visible {
+    opacity: 0;
+}
+.research-project-hint {
+    fill: var(--muted);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+.research-node.is-obscured .node-shape {
+    opacity: 0.16;
+}
+.research-edge.is-obscured {
+    opacity: 0.3;
+}
+.research-landscape-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.15rem;
+    margin-top: 1.25rem;
+    color: var(--muted);
     font-size: 0.68rem;
-
 }
-
-
 .research-landscape-legend span {
-
     display: inline-flex;
-
     align-items: center;
-
     gap: 0.4rem;
-
 }
-
-
 .legend-symbol {
-
     display: inline-block;
-
-    width: 20px;
-
-    height: 0;
-
-    flex-shrink: 0;
-
-    border-top:
-        1.5px solid var(--olive);
-
-}
-
-
-.legend-symbol.exploring {
-
-    border-top-style: solid;
-
-}
-
-
-.legend-symbol.emerging {
-
-    border-top-style: dashed;
-
-}
-
-
-.legend-symbol.work {
-
     width: 7px;
-
     height: 7px;
-
-    border:
-        1px solid var(--olive);
-
-    transform:
-        rotate(45deg);
-
+    flex-shrink: 0;
+    border: 1px solid var(--olive);
 }
-
-
-/* ==================================================
-   MOBILE
-   ================================================== */
-
-@media (max-width: 900px) {
-
-    .research-field-bar {
-
-        overflow-x: auto;
-
-        justify-content: flex-start;
-
-        scrollbar-width: none;
-
-        padding-bottom: 5px;
-
-    }
-
-
-    .research-field-bar::-webkit-scrollbar {
-
-        display: none;
-
-    }
-
-
-    .research-field-tag {
-
-        font-size: 0.62rem;
-
-    }
-
+.legend-symbol.exploring {
+    border-radius: 50%;
+    background: var(--olive);
 }
-
-
+.legend-symbol.emerging {
+    border-radius: 50%;
+    background: transparent;
+}
+.legend-symbol.work {
+    background: transparent;
+    transform: rotate(45deg);
+}
 @media (max-width: 700px) {
-
     .research-landscape {
-
         height: 520px;
-
         min-height: 520px;
-
     }
-
-
-    .research-field-bar {
-
-        gap: 0.8rem;
-
-    }
-
-
-    .research-field-tag {
-
-        font-size: 0.58rem;
-
-    }
-
-
-    .research-intersection-label {
-
+    .research-label {
         font-size: 9px;
-
     }
-
-
-    .research-work-count {
-
+    .research-project-hint {
+        font-size: 8px;
+    }
+    .research-field-indicator-item {
         font-size: 0.62rem;
-
     }
-
-
+    .research-work-count {
+        font-size: 0.62rem;
+    }
     .research-landscape-legend {
-
         gap: 0.75rem;
-
     }
-
 }
