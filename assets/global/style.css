@@ -218,7 +218,24 @@ html.is-scrolling ::-webkit-scrollbar-thumb { background: var(--olive); }
 .section-intro { display: grid; grid-template-columns: 1fr 1.3fr; gap: 50px; align-items: end; margin-bottom: 36px; }
 .section-intro .eyebrow { grid-column: 1 / -1; margin-bottom: -28px; }
 .section-intro p:last-child { max-width: 500px; justify-self: end; color: var(--muted); font-size: .86rem; }
+.about-section {
+    padding: 75px 0 100px;
+    border-top: 1px solid var(--border);
+}
 
+
+.about-content {
+    max-width: 720px;
+    margin-left: 0;
+    color: var(--muted);
+    font-size: .92rem;
+    line-height: 1.85;
+}
+
+
+.about-content p + p {
+    margin-top: 22px;
+}
 .research-map { position: relative; height: 500px; margin: 0 -20px; overflow: hidden; border: 1px solid rgba(42,55,35,.11); border-radius: 18px; background: rgba(245,243,237,.28); }
 .map-lines { position: absolute; inset: 0; width: 100%; height: 100%; }
 .map-lines line { stroke: rgba(42,55,35,.19); stroke-width: 1.2; stroke-dasharray: 5 6; }
@@ -274,6 +291,189 @@ html.is-scrolling ::-webkit-scrollbar-thumb { background: var(--olive); }
 /* =========================================================
    PROJECTS
    ========================================================= */
+.project-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+}
+.project-details-button,
+.project-repository {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: none;
+
+    font: inherit;
+    color: inherit;
+
+    cursor: pointer;
+    text-decoration: none;
+
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease;
+}
+
+.project-details-button:hover,
+.project-repository:hover {
+    opacity: 0.65;
+}
+.project-markdown {
+    width: 100%;
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+    /*
+     * .project-entry is a 2-column grid (info | description).
+     * Without this, the markdown — appended as a third grid
+     * item — only auto-places into the first column instead
+     * of spanning the full width of the card.
+     */
+    grid-column: 1 / -1;
+
+    animation:
+        project-markdown-in 300ms ease both;
+}
+
+@keyframes project-markdown-in {
+
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+.project-markdown img {
+    display: block;
+
+    max-width: 50%;
+    height: auto;
+
+    margin: 2rem auto;
+
+    border-radius: 4px;
+}
+.project-markdown pre {
+    overflow-x: auto;
+
+    margin: 1.5rem 0;
+    padding: 1.25rem;
+
+    border-radius: 6px;
+
+    background: rgba(0, 0, 0, 0.045);
+
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+.project-markdown code {
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+    font-size: 0.9em;
+}
+
+.project-markdown :not(pre) > code {
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
+
+    background: rgba(0, 0, 0, 0.05);
+}
+.project-markdown table {
+    width: max-content;
+    max-width: 100%;
+
+    margin: 2rem auto;
+
+    border-collapse: collapse;
+
+    font-size: 0.92rem;
+}
+
+.project-markdown th,
+.project-markdown td {
+    padding: 0.7rem 0.8rem;
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+    text-align: center;
+}
+
+.project-markdown th {
+    font-weight: 600;
+}
+.project-markdown blockquote {
+    margin: 1.5rem 0;
+    padding-left: 1.25rem;
+
+    border-left:
+        2px solid rgba(0, 0, 0, 0.25);
+
+    color: #666;
+}
+.project-markdown a {
+    color: inherit;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+
+.project-markdown a:hover {
+    opacity: 0.65;
+}
+
+.project-markdown ul,
+.project-markdown ol {
+    margin: 1rem 0;
+    padding-left: 1.4rem;
+}
+
+.project-markdown li {
+    margin: 0.4rem 0;
+}
+
+.project-markdown li::marker {
+    color: var(--muted);
+}
+
+.project-markdown li > ul,
+.project-markdown li > ol {
+    margin: 0.4rem 0;
+}
+
+.project-markdown hr {
+    margin: 2rem 0;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.project-markdown-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.project-markdown-footer .project-repository {
+    margin-top: 0;
+}
 /* ---------------------------------------------------------
    Project filters
    --------------------------------------------------------- */

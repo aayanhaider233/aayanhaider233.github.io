@@ -164,19 +164,9 @@
 
   /* =========================================================
      NON-PROFILE HEADER STATE
-     =========================================================
-     
-     Every panel other than Profile permanently uses the
-     compact header.
-
-     This state is NOT affected by scroll position.
      ========================================================= */
 
   function setNonProfileHeaderState() {
-
-    /*
-     * Cancel any Profile transitions.
-     */
 
     window.clearTimeout(
       titleFadeTimer
@@ -191,49 +181,24 @@
     navReturnTimer = null;
 
 
-    /*
-     * Mark the nav as already centred.
-     */
-
     navCentered = true;
 
-
-    /*
-     * Remove scroll-controlled movement.
-     */
 
     nav.classList.remove(
       "is-following-scroll"
     );
 
 
-    /*
-     * Keep the space open for the title.
-     */
-
     setNavProgress(1);
 
 
-    /*
-     * Always show the small title.
-     */
-
     showHeaderTitle();
 
-
-    /*
-     * Keep the compact header appearance.
-     */
 
     siteHeader.classList.add(
       "is-compact"
     );
 
-
-    /*
-     * Non-profile panels should not inherit a
-     * Profile-specific border opacity.
-     */
 
     siteHeader.style.setProperty(
       "--header-border-opacity",
@@ -245,19 +210,9 @@
 
   /* =========================================================
      PROFILE HEADER RESET
-     =========================================================
-     
-     This is called immediately when switching TO Profile.
-
-     It deliberately does NOT depend on the current scroll
-     position.
      ========================================================= */
 
   function resetProfileHeaderState() {
-
-    /*
-     * Cancel everything from the previous panel.
-     */
 
     window.clearTimeout(
       titleFadeTimer
@@ -272,23 +227,11 @@
     navReturnTimer = null;
 
 
-    /*
-     * Profile starts with the nav in its normal position.
-     */
-
     navCentered = false;
 
 
-    /*
-     * Remove the compact title immediately.
-     */
-
     hideHeaderTitle();
 
-
-    /*
-     * Close the space between the two nav pairs.
-     */
 
     nav.classList.remove(
       "is-following-scroll"
@@ -297,30 +240,16 @@
     setNavProgress(0);
 
 
-    /*
-     * Return the header to its normal Profile state.
-     */
-
     siteHeader.classList.remove(
       "is-compact"
     );
 
-
-    /*
-     * Reset border before Profile's scroll logic
-     * takes over.
-     */
 
     siteHeader.style.setProperty(
       "--header-border-opacity",
       "0"
     );
 
-
-    /*
-     * Synchronise the scroll reference so switching
-     * panels does not create a false scroll direction.
-     */
 
     lastScrollY =
       window.scrollY;
@@ -349,18 +278,10 @@
     navCentered = false;
 
 
-    /*
-     * Re-enable the CSS transition.
-     */
-
     nav.classList.remove(
       "is-following-scroll"
     );
 
-
-    /*
-     * CSS smoothly moves the nav from 1 → 0.
-     */
 
     setNavProgress(0);
 
@@ -387,12 +308,6 @@
     }
 
 
-    /*
-     * -------------------------------------------------------
-     * HEADER TRANSITIONS ONLY EXIST ON PROFILE
-     * -------------------------------------------------------
-     */
-
     if (!isProfileActive()) {
 
       setNonProfileHeaderState();
@@ -402,11 +317,9 @@
     }
 
 
-    /*
-     * -------------------------------------------------------
-     * SCROLL DIRECTION
-     * -------------------------------------------------------
-     */
+    /* -------------------------------------------------------
+       SCROLL DIRECTION
+       ------------------------------------------------------- */
 
     var currentScrollY =
       window.scrollY;
@@ -418,11 +331,9 @@
       currentScrollY;
 
 
-    /*
-     * -------------------------------------------------------
-     * LARGE TITLE POSITION
-     * -------------------------------------------------------
-     */
+    /* -------------------------------------------------------
+       LARGE TITLE POSITION
+       ------------------------------------------------------- */
 
     var titleRect =
       heroTitle.getBoundingClientRect();
@@ -433,11 +344,6 @@
 
     /* =======================================================
        BORDER
-       =======================================================
-
-       The border is independent of nav positioning.
-
-       It is based purely on the large title's position.
        ======================================================= */
 
     var borderFadeStart = 80;
@@ -477,15 +383,6 @@
 
     if (scrollingUp) {
 
-
-      /*
-       * -----------------------------------------------------
-       * LARGE TITLE IS 1/4 VISIBLE
-       * -----------------------------------------------------
-       *
-       * Begin fading out the small header title.
-       */
-
       var quarterVisiblePoint =
         titleHeight * 0.75;
 
@@ -503,19 +400,10 @@
 
         titleFadeTimer = null;
 
-
         hideHeaderTitle();
 
       }
 
-
-      /*
-       * -----------------------------------------------------
-       * LARGE TITLE IS COMPLETELY IN VIEW
-       * -----------------------------------------------------
-       *
-       * Only now allow the nav to return.
-       */
 
       if (
         navCentered &&
@@ -526,11 +414,6 @@
           navReturnTimer
         );
 
-
-        /*
-         * If the title is still visible, begin its fade
-         * and wait for the CSS opacity transition.
-         */
 
         if (titleVisible) {
 
@@ -559,11 +442,6 @@
 
         } else {
 
-          /*
-           * Title has already disappeared.
-           * Return immediately.
-           */
-
           returnNavToRight();
 
         }
@@ -574,28 +452,12 @@
       }
 
 
-      /*
-       * -----------------------------------------------------
-       * NAV ALREADY CENTRED
-       * -----------------------------------------------------
-       *
-       * Keep it stationary while the large title comes back.
-       */
-
       if (navCentered) {
 
         return;
 
       }
 
-
-      /*
-       * -----------------------------------------------------
-       * SCROLLING UP BEFORE NAV IS CENTRED
-       * -----------------------------------------------------
-       *
-       * Reverse the normal page-following movement.
-       */
 
       nav.classList.add(
         "is-following-scroll"
@@ -653,21 +515,12 @@
       !navCentered
     ) {
 
-
-      /*
-       * Cancel any pending return.
-       */
-
       window.clearTimeout(
         navReturnTimer
       );
 
       navReturnTimer = null;
 
-
-      /*
-       * Nav follows the page.
-       */
 
       nav.classList.add(
         "is-following-scroll"
@@ -700,10 +553,6 @@
         );
 
 
-      /*
-       * Smoothstep easing.
-       */
-
       var eased =
         progress *
         progress *
@@ -715,22 +564,12 @@
       );
 
 
-      /*
-       * -----------------------------------------------------
-       * NAV HAS REACHED CENTRE
-       * -----------------------------------------------------
-       */
-
       if (
         progress >= 0.98
       ) {
 
         setNavProgress(1);
 
-
-        /*
-         * Stop scroll-controlled movement.
-         */
 
         nav.classList.remove(
           "is-following-scroll"
@@ -744,12 +583,6 @@
           "is-compact"
         );
 
-
-        /*
-         * ---------------------------------------------------
-         * SHOW SMALL TITLE AFTER NAV SETTLES
-         * ---------------------------------------------------
-         */
 
         if (
           !titleVisible &&
@@ -825,26 +658,8 @@
     }
 
 
-    /*
-     * -------------------------------------------------------
-     * CHANGE ACTIVE TAB FIRST
-     * -------------------------------------------------------
-     */
-
     setTabStates(tab);
 
-
-    /*
-     * -------------------------------------------------------
-     * UPDATE HEADER IMMEDIATELY
-     * -------------------------------------------------------
-     *
-     * This MUST happen before the early return below.
-     *
-     * Otherwise switching panels can leave the nav in the
-     * previous Profile state until the next scroll event.
-     * -------------------------------------------------------
-     */
 
     if (
       tab.getAttribute("aria-controls") ===
@@ -859,12 +674,6 @@
 
     }
 
-
-    /*
-     * -------------------------------------------------------
-     * UPDATE HASH
-     * -------------------------------------------------------
-     */
 
     if (
       opts.updateHash !== false
@@ -886,12 +695,6 @@
       tab.focus();
     }
 
-
-    /*
-     * -------------------------------------------------------
-     * INSTANT / INITIAL PANEL
-     * -------------------------------------------------------
-     */
 
     if (
       !oldPanel ||
@@ -920,12 +723,6 @@
 
     }
 
-
-    /*
-     * -------------------------------------------------------
-     * PANEL FADE
-     * -------------------------------------------------------
-     */
 
     oldPanel.classList.add(
       "is-fading"
@@ -962,12 +759,6 @@
       FADE_MS
     );
 
-
-    /*
-     * -------------------------------------------------------
-     * SCROLL TO TOP
-     * -------------------------------------------------------
-     */
 
     if (
       opts.scroll !== false
@@ -1184,538 +975,1263 @@
 
   updateHeaderProgress();
 
-/* =========================================================
-   PROJECTS
-   ========================================================= */
+
+  /* =========================================================
+     PROJECTS
+     ========================================================= */
+
+  var projectsList =
+    document.getElementById(
+      "projects-list"
+    );
+
+  var projectFieldFilters =
+    document.getElementById(
+      "project-field-filters"
+    );
+
+  var projectToolFilters =
+    document.getElementById(
+      "project-tool-filters"
+    );
+
+  var activeFields = [];
+
+  var activeTools = [];
 
 
+  /* =========================================================
+     OPEN PROJECTS PANEL
+     ========================================================= */
 
-var projectsList =
-    document.getElementById("projects-list");
+  window.openProjectsPanel =
+    function (fields) {
 
-var projectFieldFilters =
-    document.getElementById("project-field-filters");
-
-var projectToolFilters =
-    document.getElementById("project-tool-filters");
-
-var activeFields = [];
-
-var activeTools = [];
-
-/*
- * =========================================================
- * OPEN PROJECTS PANEL
- * =========================================================
- */
-
-window.openProjectsPanel = function (fields) {
-
-    var projectsTab =
+      var projectsTab =
         tabs.find(function (tab) {
 
-            return (
-                tab.getAttribute("aria-controls") ===
-                "panel-projects"
-            );
+          return (
+            tab.getAttribute(
+              "aria-controls"
+            ) ===
+            "panel-projects"
+          );
 
         });
 
 
-    if (!projectsTab) {
+      if (!projectsTab) {
         return;
-    }
+      }
 
 
-    /*
-     * Apply project filters if fields were supplied.
-     */
-
-    if (
+      if (
         Array.isArray(fields) &&
         typeof window.showProjectsWithFields ===
-        "function"
-    ) {
+          "function"
+      ) {
 
-        window.showProjectsWithFields(fields);
+        window.showProjectsWithFields(
+          fields
+        );
 
-    }
+      }
 
 
-    /*
-     * Switch to Projects.
-     */
+      activate(projectsTab);
 
-    activate(projectsTab);
+    };
 
-};
 
-function getUniqueProjectTags(key) {
+  /* =========================================================
+     PROJECT FILTERS
+     ========================================================= */
+
+  function getUniqueProjectTags(key) {
 
     var tags = [];
 
+
     PROJECTS.forEach(function (project) {
 
-        (project[key] || []).forEach(function (tag) {
+      (project[key] || [])
+        .forEach(function (tag) {
 
-            if (!tags.includes(tag)) {
-                tags.push(tag);
-            }
+          if (!tags.includes(tag)) {
+            tags.push(tag);
+          }
 
         });
 
     });
 
+
     return tags.sort();
-}
+
+  }
 
 
-function createProjectFilter(
+  function createProjectFilter(
     container,
     label,
     type
-) {
+  ) {
 
     var button =
-        document.createElement("button");
+      document.createElement(
+        "button"
+      );
 
     button.type = "button";
 
     button.className =
-        "project-filter-button";
+      "project-filter-button";
 
     button.textContent =
-        label;
+      label;
 
 
     var activeFilters =
-        type === "field"
-            ? activeFields
-            : activeTools;
+      type === "field"
+        ? activeFields
+        : activeTools;
 
 
     if (
-        (label === "All" && activeFilters.length === 0) ||
-        activeFilters.includes(label)
+      (
+        label === "All" &&
+        activeFilters.length === 0
+      ) ||
+      activeFilters.includes(label)
     ) {
-        button.classList.add("is-active");
+
+      button.classList.add(
+        "is-active"
+      );
+
     }
 
 
     button.addEventListener(
-        "click",
-        function () {
+      "click",
+      function () {
 
-            var filters =
-                type === "field"
-                    ? activeFields
-                    : activeTools;
-
-
-            /*
-             * ---------------------------------------------
-             * "All" is mutually exclusive.
-             * ---------------------------------------------
-             */
-
-            if (label === "All") {
-
-                if (type === "field") {
-                    activeFields = [];
-                } else {
-                    activeTools = [];
-                }
-
-            }
+        var filters =
+          type === "field"
+            ? activeFields
+            : activeTools;
 
 
-            /*
-             * ---------------------------------------------
-             * Selecting another filter removes "All"
-             * and toggles the selected option.
-             * ---------------------------------------------
-             */
+        if (label === "All") {
 
-            else {
+          if (type === "field") {
+            activeFields = [];
+          } else {
+            activeTools = [];
+          }
 
-                var allIndex =
-                    filters.indexOf("All");
+        } else {
 
-                if (allIndex !== -1) {
-                    filters.splice(allIndex, 1);
-                }
+          var allIndex =
+            filters.indexOf("All");
 
 
-                var index =
-                    filters.indexOf(label);
+          if (allIndex !== -1) {
+            filters.splice(
+              allIndex,
+              1
+            );
+          }
 
 
-                if (index === -1) {
-
-                    filters.push(label);
-
-                } else {
-
-                    filters.splice(index, 1);
-
-                }
+          var index =
+            filters.indexOf(label);
 
 
-                /*
-                 * If nothing remains selected,
-                 * automatically return to All.
-                 */
+          if (index === -1) {
 
-                if (filters.length === 0) {
+            filters.push(label);
 
-                    filters.push("All");
+          } else {
 
-                }
+            filters.splice(
+              index,
+              1
+            );
 
-            }
-
-
-            renderProjectFilters();
-
-            renderProjects();
+          }
 
         }
+
+
+        renderProjectFilters();
+
+        renderProjects();
+
+      }
     );
 
 
-    container.appendChild(button);
-}
+    container.appendChild(
+      button
+    );
+
+  }
 
 
-function renderProjectFilters() {
+  function renderProjectFilters() {
 
     if (
-        !projectFieldFilters ||
-        !projectToolFilters
+      !projectFieldFilters ||
+      !projectToolFilters
     ) {
-        return;
+      return;
     }
 
 
-    projectFieldFilters.innerHTML = "";
+    projectFieldFilters.innerHTML =
+      "";
 
-    projectToolFilters.innerHTML = "";
+    projectToolFilters.innerHTML =
+      "";
 
 
     createProjectFilter(
-        projectFieldFilters,
-        "All",
-        "field"
+      projectFieldFilters,
+      "All",
+      "field"
     );
 
 
     getUniqueProjectTags("fields")
-        .forEach(function (field) {
+      .forEach(function (field) {
 
-            createProjectFilter(
-                projectFieldFilters,
-                field,
-                "field"
-            );
+        createProjectFilter(
+          projectFieldFilters,
+          field,
+          "field"
+        );
 
-        });
+      });
 
 
     createProjectFilter(
-        projectToolFilters,
-        "All",
-        "tool"
+      projectToolFilters,
+      "All",
+      "tool"
     );
 
 
     getUniqueProjectTags("tools")
-        .forEach(function (tool) {
+      .forEach(function (tool) {
 
-            createProjectFilter(
-                projectToolFilters,
-                tool,
-                "tool"
-            );
+        createProjectFilter(
+          projectToolFilters,
+          tool,
+          "tool"
+        );
 
-        });
-}
+      });
+
+  }
 
 
-function projectMatchesFilters(project) {
+  function projectMatchesFilters(
+    project
+  ) {
 
     var matchesFields =
-        activeFields.length === 0 ||
-        activeFields.every(function (field) {
-            return (project.fields || []).includes(field);
-        });
+      activeFields.length === 0 ||
+      activeFields.every(
+        function (field) {
+
+          return (
+            project.fields || []
+          ).includes(field);
+
+        }
+      );
+
 
     var matchesTools =
-        activeTools.length === 0 ||
-        activeTools.every(function (tool) {
-            return (project.tools || []).includes(tool);
-        });
+      activeTools.length === 0 ||
+      activeTools.every(
+        function (tool) {
 
-    return matchesFields && matchesTools;
+          return (
+            project.tools || []
+          ).includes(tool);
+
+        }
+      );
+
+
+    return (
+      matchesFields &&
+      matchesTools
+    );
+
+  }
+
+
+  /* =========================================================
+     PROJECT MARKDOWN
+     ========================================================= */
+
+ function getProjectContentUrl(project) {
+
+  if (!project.content) {
+    return null;
+  }
+
+  return project.content;
+
 }
 
 
-function renderProjects() {
+  /* =========================================================
+     LOCAL ASSET URL RESOLUTION
+     ========================================================= */
 
-    if (!projectsList) {
-        return;
+  function resolveLocalAssetUrl(
+    source,
+    contentUrl
+  ) {
+
+    if (!source) {
+      return source;
     }
 
 
-    projectsList.innerHTML = "";
+    /*
+     * Absolute URLs / data URLs remain untouched.
+     */
+
+    if (
+      source.startsWith("http://") ||
+      source.startsWith("https://") ||
+      source.startsWith("//") ||
+      source.startsWith("data:")
+    ) {
+
+      return source;
+
+    }
+
+
+    /*
+     * Anchor links are not assets.
+     */
+
+    if (
+      source.startsWith("#")
+    ) {
+
+      return source;
+
+    }
+
+
+    try {
+
+      return new URL(
+        source,
+        new URL(
+          contentUrl,
+          window.location.href
+        )
+      ).href;
+
+    } catch (error) {
+
+      console.warn(
+        "Could not resolve local asset:",
+        source
+      );
+
+      return source;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     LOCAL LINK URL RESOLUTION
+     ========================================================= */
+
+  function resolveLocalLinkUrl(
+    href,
+    contentUrl
+  ) {
+
+    if (!href) {
+      return href;
+    }
+
+
+    /*
+     * External links.
+     */
+
+    if (
+      href.startsWith("http://") ||
+      href.startsWith("https://") ||
+      href.startsWith("//") ||
+      href.startsWith("mailto:")
+    ) {
+
+      return href;
+
+    }
+
+
+    /*
+     * Internal anchors.
+     */
+
+    if (
+      href.startsWith("#")
+    ) {
+
+      return href;
+
+    }
+
+
+    try {
+
+      return new URL(
+        href,
+        new URL(
+          contentUrl,
+          window.location.href
+        )
+      ).href;
+
+    } catch (error) {
+
+      console.warn(
+        "Could not resolve local Markdown link:",
+        href
+      );
+
+      return href;
+
+    }
+
+  }
+
+
+  /* =========================================================
+     HTML ESCAPING
+     ========================================================= */
+
+  function escapeHtml(value) {
+
+    return String(value || "")
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
+
+  }
+
+
+  /* =========================================================
+     REMOVE MARKDOWN TITLE
+     ========================================================= */
+
+  function removeLeadingMarkdownTitle(
+    markdown
+  ) {
+
+    return markdown.replace(
+      /^\s*#\s+[^\n]+\n+/,
+      ""
+    );
+
+  }
+
+
+  /* =========================================================
+     LOAD PROJECT MARKDOWN
+     ========================================================= */
+
+  async function loadProjectMarkdown(
+    project,
+    container
+  ) {
+
+    var contentUrl =
+      getProjectContentUrl(
+        project
+      );
+
+
+    if (!contentUrl) {
+
+      container.innerHTML =
+        "<p>No project details available.</p>";
+
+      return;
+
+    }
+
+
+    container.innerHTML =
+      "<p>Loading…</p>";
+
+
+    try {
+
+      var response =
+        await fetch(
+          contentUrl
+        );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Project content request failed: " +
+          response.status
+        );
+
+      }
+
+
+      var markdown =
+        await response.text();
+
+
+      /*
+       * The project title is already displayed
+       * by the project card.
+       *
+       * Therefore remove a leading H1 from the
+       * Markdown document.
+       */
+
+      markdown =
+        removeLeadingMarkdownTitle(
+          markdown
+        );
+
+
+      renderProjectMarkdown(
+        markdown,
+        project,
+        container,
+        contentUrl
+      );
+
+
+    } catch (error) {
+
+        console.error(
+            "Could not load project content:",
+            error
+        );
+
+        container.innerHTML =
+            "<p>Unable to load project details.</p>" +
+            "<p class=\"project-error\">" +
+            escapeHtml(error.message) +
+            "</p>";
+
+    }
+
+  }
+
+
+  /* =========================================================
+     RENDER PROJECT MARKDOWN
+     ========================================================= */
+
+  function renderProjectMarkdown(
+    markdown,
+    project,
+    container,
+    contentUrl
+  ) {
+
+    var html;
+
+
+    /*
+     * -------------------------------------------------------
+     * MARKDOWN → HTML
+     * -------------------------------------------------------
+     */
+
+    if (
+      window.marked &&
+      typeof window.marked.parse ===
+        "function"
+    ) {
+
+      html =
+        window.marked.parse(
+          markdown,
+          {
+            gfm: true,
+            breaks: false
+          }
+        );
+
+    } else if (
+      window.marked
+    ) {
+
+      html =
+        window.marked(
+          markdown
+        );
+
+    } else {
+
+      html =
+        "<p>" +
+        escapeHtml(markdown) +
+        "</p>";
+
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * SANITIZE
+     * -------------------------------------------------------
+     */
+
+    if (
+      window.DOMPurify &&
+      typeof window.DOMPurify.sanitize ===
+        "function"
+    ) {
+
+      html =
+        window.DOMPurify.sanitize(
+          html
+        );
+
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * INSERT
+     * -------------------------------------------------------
+     */
+
+    container.innerHTML =
+      html;
+
+
+    /*
+     * -------------------------------------------------------
+     * RESOLVE LOCAL IMAGES / GIFS
+     * -------------------------------------------------------
+     *
+     * Relative image paths are resolved relative to
+     * the Markdown file itself.
+     *
+     * For example:
+     *
+     * Markdown:
+     *   ![Simulation](media/aquarium.gif)
+     *
+     * becomes:
+     *
+     * assets/projects/content/media/aquarium.gif
+     *
+     * assuming the Markdown file is located at:
+     *
+     * assets/projects/content/project.md
+     *
+     * -------------------------------------------------------
+     */
+
+    Array.prototype.forEach.call(
+      container.querySelectorAll(
+        "img[src]"
+      ),
+      function (img) {
+
+        img.src =
+          resolveLocalAssetUrl(
+            img.getAttribute(
+              "src"
+            ),
+            contentUrl
+          );
+
+
+        img.loading =
+          "lazy";
+
+      }
+    );
+
+
+    /*
+     * -------------------------------------------------------
+     * RESOLVE MARKDOWN LINKS
+     * -------------------------------------------------------
+     */
+
+    Array.prototype.forEach.call(
+      container.querySelectorAll(
+        "a[href]"
+      ),
+      function (link) {
+
+        var href =
+          link.getAttribute(
+            "href"
+          );
+
+
+        link.href =
+          resolveLocalLinkUrl(
+            href,
+            contentUrl
+          );
+
+
+        /*
+         * Keep links from interfering with
+         * the project card.
+         */
+
+        if (
+          !href ||
+          !href.startsWith("#")
+        ) {
+
+          link.target =
+            "_blank";
+
+          link.rel =
+            "noopener noreferrer";
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
+     RENDER PROJECTS
+     ========================================================= */
+
+  function renderProjects() {
+
+    if (!projectsList) {
+      return;
+    }
+
+
+    projectsList.innerHTML =
+      "";
 
 
     PROJECTS
-        .filter(projectMatchesFilters)
-        .forEach(function (project) {
+      .filter(
+        projectMatchesFilters
+      )
+      .forEach(
+        function (project) {
 
-            var entry =
-                document.createElement("article");
+          var entry =
+            document.createElement(
+              "article"
+            );
 
-            entry.className =
-                "project-entry";
-
-
-            /*
-             * -------------------------------------------------
-             * Left side
-             * -------------------------------------------------
-             */
-
-            var left =
-                document.createElement("div");
-
-            left.className =
-                "project-information";
+          entry.className =
+            "project-entry";
 
 
-            var title =
-                document.createElement("h3");
+          /* -------------------------------------------------
+             LEFT SIDE
+             ------------------------------------------------- */
 
-            title.textContent =
-                project.title;
+          var left =
+            document.createElement(
+              "div"
+            );
 
-            left.appendChild(title);
+          left.className =
+            "project-information";
 
 
-            if (project.subtitle) {
+          var title =
+            document.createElement(
+              "h3"
+            );
 
-                var subtitle =
-                    document.createElement("p");
+          title.textContent =
+            project.title;
 
-                subtitle.className =
-                    "project-subtitle";
+          left.appendChild(
+            title
+          );
 
-                subtitle.textContent =
-                    project.subtitle;
 
-                left.appendChild(subtitle);
+          if (
+            project.subtitle
+          ) {
+
+            var subtitle =
+              document.createElement(
+                "p"
+              );
+
+            subtitle.className =
+              "project-subtitle";
+
+            subtitle.textContent =
+              project.subtitle;
+
+            left.appendChild(
+              subtitle
+            );
+
+          }
+
+
+          /* -------------------------------------------------
+             TAGS
+             ------------------------------------------------- */
+
+          var tags =
+            document.createElement(
+              "div"
+            );
+
+          tags.className =
+            "project-tags";
+
+
+          /*
+           * Field tags — row 1
+           */
+
+          if (
+            project.fields &&
+            project.fields.length
+          ) {
+
+            var fieldRow =
+              document.createElement(
+                "div"
+              );
+
+            fieldRow.className =
+              "project-tag-row";
+
+
+            project.fields.forEach(
+              function (field) {
+
+                var tag =
+                  document.createElement(
+                    "span"
+                  );
+
+                tag.textContent =
+                  field;
+
+                fieldRow.appendChild(
+                  tag
+                );
+
+              }
+            );
+
+
+            tags.appendChild(
+              fieldRow
+            );
+
+          }
+
+
+          /*
+           * Tool tags — row 2
+           */
+
+          if (
+            project.tools &&
+            project.tools.length
+          ) {
+
+            var toolRow =
+              document.createElement(
+                "div"
+              );
+
+            toolRow.className =
+              "project-tag-row";
+
+
+            project.tools.forEach(
+              function (tool) {
+
+                var tag =
+                  document.createElement(
+                    "span"
+                  );
+
+                tag.textContent =
+                  tool;
+
+                toolRow.appendChild(
+                  tag
+                );
+
+              }
+            );
+
+
+            tags.appendChild(
+              toolRow
+            );
+
+          }
+
+
+          if (
+            tags.children.length
+          ) {
+
+            left.appendChild(
+              tags
+            );
+
+          }
+
+
+          /* -------------------------------------------------
+             RIGHT SIDE
+             ------------------------------------------------- */
+
+          var right =
+            document.createElement(
+              "div"
+            );
+
+          right.className =
+            "project-description";
+
+
+          if (
+            project.description
+          ) {
+
+            var description =
+              document.createElement(
+                "p"
+              );
+
+            description.textContent =
+              project.description;
+
+            right.appendChild(
+              description
+            );
+
+          }
+
+
+          /* -------------------------------------------------
+             PROJECT ACTIONS
+             ------------------------------------------------- */
+
+          var projectActions =
+            document.createElement(
+              "div"
+            );
+
+          projectActions.className =
+            "project-actions";
+
+
+          /*
+           * Details button
+           */
+
+          var detailsButton =
+            document.createElement(
+              "button"
+            );
+
+          detailsButton.type =
+            "button";
+
+          detailsButton.className =
+            "project-details-button";
+
+          detailsButton.textContent =
+            "Details →";
+
+
+          /*
+           * Markdown container
+           */
+
+          var markdown =
+            document.createElement(
+              "div"
+            );
+
+          markdown.className =
+            "project-markdown";
+
+          markdown.hidden =
+            true;
+
+
+          var markdownContent =
+            document.createElement(
+              "div"
+            );
+
+          markdownContent.className =
+            "project-markdown-content";
+
+          markdown.appendChild(
+            markdownContent
+          );
+
+
+          /*
+           * GitHub repository link.
+           *
+           * GitHub is now completely independent
+           * from project-content loading.
+           */
+
+          if (
+            project.repository
+          ) {
+
+            var repositoryFooter =
+              document.createElement(
+                "div"
+              );
+
+            repositoryFooter.className =
+              "project-readme-footer";
+
+
+            var repository =
+              document.createElement(
+                "a"
+              );
+
+            repository.href =
+              project.repository;
+
+            repository.target =
+              "_blank";
+
+            repository.rel =
+              "noopener noreferrer";
+
+            repository.textContent =
+              "View on GitHub →";
+
+            repository.className =
+              "project-repository";
+
+
+            repositoryFooter.appendChild(
+              repository
+            );
+
+            markdown.appendChild(
+              repositoryFooter
+            );
+
+          }
+
+
+          /*
+           * Track whether the local Markdown has
+           * already been loaded.
+           */
+
+          var markdownLoaded =
+            false;
+
+
+          /* -------------------------------------------------
+             DETAILS CLICK
+             ------------------------------------------------- */
+
+          detailsButton.addEventListener(
+            "click",
+            function () {
+
+              var isExpanded =
+                entry.classList.contains(
+                  "is-expanded"
+                );
+
+
+              if (
+                isExpanded
+              ) {
+
+                /*
+                 * Collapse.
+                 */
+
+                entry.classList.remove(
+                  "is-expanded"
+                );
+
+                detailsButton.textContent =
+                  "Details →";
+
+                markdown.hidden =
+                  true;
+
+                return;
+
+              }
+
+
+              /*
+               * Expand.
+               */
+
+              entry.classList.add(
+                "is-expanded"
+              );
+
+              detailsButton.textContent =
+                "Details ↑";
+
+              markdown.hidden =
+                false;
+
+
+              /*
+               * Load local Markdown only once.
+               */
+
+              if (
+                !markdownLoaded
+              ) {
+
+                markdownLoaded =
+                  true;
+
+                loadProjectMarkdown(
+                  project,
+                  markdownContent
+                );
+
+              }
 
             }
+          );
 
 
-            /*
- * -------------------------------------------------
- * Tags
- * -------------------------------------------------
- */
-
-var tags =
-    document.createElement("div");
-
-tags.className =
-    "project-tags";
+          projectActions.appendChild(
+            detailsButton
+          );
 
 
-/*
- * Field tags — row 1
- */
-
-if (
-    project.fields &&
-    project.fields.length
-) {
-
-    var fieldRow =
-        document.createElement("div");
-
-    fieldRow.className =
-        "project-tag-row";
+          right.appendChild(
+            projectActions
+          );
 
 
-    project.fields.forEach(function (field) {
+          entry.appendChild(
+            left
+          );
 
-        var tag =
-            document.createElement("span");
+          entry.appendChild(
+            right
+          );
 
-        tag.textContent =
-            field;
-
-        fieldRow.appendChild(tag);
-
-    });
-
-
-    tags.appendChild(fieldRow);
-}
+          entry.appendChild(
+            markdown
+          );
 
 
-/*
- * Tool tags — row 2
- */
+          projectsList.appendChild(
+            entry
+          );
 
-if (
-    project.tools &&
-    project.tools.length
-) {
+        }
+      );
 
-    var toolRow =
-        document.createElement("div");
-
-    toolRow.className =
-        "project-tag-row";
+  }
 
 
-    project.tools.forEach(function (tool) {
+  /* =========================================================
+     SHOW PROJECTS FROM RESEARCH LANDSCAPE
+     =========================================================
+     
+     Called by research-landscape-engine.js when an
+     "Intersecting Works" node is clicked.
 
-        var tag =
-            document.createElement("span");
+     fields = the fields represented by that intersection.
 
-        tag.textContent =
-            tool;
+     This shows every project containing ALL supplied fields.
+     ========================================================= */
 
-        toolRow.appendChild(tag);
+  window.showProjectsWithFields =
+    function (fields) {
 
-    });
-
-
-    tags.appendChild(toolRow);
-}
-
-
-if (tags.children.length) {
-    left.appendChild(tags);
-}
-
-
-            /*
-             * -------------------------------------------------
-             * Right side
-             * -------------------------------------------------
-             */
-
-            var right =
-                document.createElement("div");
-
-            right.className =
-                "project-description";
-
-
-            if (project.description) {
-
-                var description =
-                    document.createElement("p");
-
-                description.textContent =
-                    project.description;
-
-                right.appendChild(description);
-
-            }
-
-
-            if (project.repository) {
-
-                var repository =
-                    document.createElement("a");
-
-                repository.href =
-                    project.repository;
-
-                repository.target =
-                    "_blank";
-
-                repository.rel =
-                    "noopener noreferrer";
-
-                repository.textContent =
-                    "Visit repository →";
-
-                repository.className =
-                    "project-repository";
-
-                right.appendChild(repository);
-
-            }
-
-
-            entry.appendChild(left);
-
-            entry.appendChild(right);
-
-            projectsList.appendChild(entry);
-
-        });
-}
-/*
- * =========================================================
- * SHOW PROJECTS FROM RESEARCH LANDSCAPE
- * =========================================================
- *
- * Called by research-landscape-engine.js when an
- * "Intersecting Works" node is clicked.
- *
- * fields = the fields represented by that intersection.
- *
- * Example:
- *
- * showProjectsWithFields([
- *     "Machine Learning",
- *     "Causal ML",
- *     "Bioinformatics"
- * ]);
- *
- * This shows every project containing ALL three fields.
- * =========================================================
- */
-
-window.showProjectsWithFields = function (fields) {
-
-    /*
-     * Clear any existing filters.
-     */
-
-    activeFields =
+      activeFields =
         Array.isArray(fields)
-            ? fields.slice()
-            : [];
-
-    activeTools = [];
+          ? fields.slice()
+          : [];
 
 
-    /*
-     * Rebuild the filter UI so the selected
-     * fields are visually reflected.
-     */
-
-    renderProjectFilters();
+      activeTools = [];
 
 
-    /*
-     * Apply the filters.
-     */
+      renderProjectFilters();
 
-    renderProjects();
+      renderProjects();
 
-};
+    };
 
-renderProjectFilters();
 
-renderProjects();
+  /* =========================================================
+     INITIAL PROJECT RENDER
+     ========================================================= */
+
+  renderProjectFilters();
+
+  renderProjects();
+
+
   /* =========================================================
      AUTO-HIDING SCROLLBAR
      ========================================================= */

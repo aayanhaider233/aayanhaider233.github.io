@@ -149,6 +149,306 @@
 
 
     /* =========================================================
+       FIELD INDICATOR
+       (top-left list of fields for a hovered work node)
+       ========================================================= */
+
+    var fieldIndicator =
+        document.createElement(
+            "div"
+        );
+
+
+    fieldIndicator.className =
+        "research-field-indicator";
+
+
+    container.appendChild(
+        fieldIndicator
+    );
+
+
+    /*
+     * When the exit animation (fade + slide right) finishes,
+     * snap the indicator back to its base "left" position
+     * without animating, so the next entrance always slides
+     * in from the left again.
+     */
+
+    fieldIndicator.addEventListener(
+        "transitionend",
+        function (event) {
+
+            if (
+                event.propertyName !== "transform"
+            ) {
+                return;
+            }
+
+            if (
+                fieldIndicator.classList.contains(
+                    "is-hidden-right"
+                ) &&
+
+                !fieldIndicator.classList.contains(
+                    "is-visible"
+                )
+            ) {
+
+                fieldIndicator.style.transition =
+                    "none";
+
+                fieldIndicator.classList.remove(
+                    "is-hidden-right"
+                );
+
+                /*
+                 * Force reflow so the transition-disabled
+                 * style actually applies before we restore
+                 * the transition.
+                 */
+
+                void fieldIndicator.offsetWidth;
+
+                fieldIndicator.style.transition =
+                    "";
+
+            }
+
+        }
+    );
+
+
+    function populateFieldIndicator(
+        fields
+    ) {
+
+        fieldIndicator.innerHTML =
+            "";
+
+        fields.forEach(
+            function (fieldName) {
+
+                var row =
+                    document.createElement(
+                        "div"
+                    );
+
+                row.className =
+                    "research-field-indicator-item";
+
+                row.textContent =
+                    fieldName;
+
+                fieldIndicator.appendChild(
+                    row
+                );
+
+            }
+        );
+
+    }
+
+
+    function showFieldIndicator(
+        node
+    ) {
+
+        if (
+            !isWorkNode(node) ||
+            !node.fields ||
+            !node.fields.length
+        ) {
+
+            return;
+
+        }
+
+        populateFieldIndicator(
+            node.fields
+        );
+
+        fieldIndicator.classList.remove(
+            "is-hidden-right"
+        );
+
+        fieldIndicator.classList.add(
+            "is-visible"
+        );
+
+    }
+
+
+    function hideFieldIndicator() {
+
+        fieldIndicator.classList.remove(
+            "is-visible"
+        );
+
+        fieldIndicator.classList.add(
+            "is-hidden-right"
+        );
+
+    }
+
+
+    /* =========================================================
+       WORK COUNT
+       (top-right "N works" indicator for a hovered work node)
+       ========================================================= */
+
+    var workCount =
+        document.createElement(
+            "div"
+        );
+
+
+    workCount.className =
+        "research-work-count";
+
+
+    container.appendChild(
+        workCount
+    );
+
+
+    /*
+     * Mirror image of the field indicator's reset behaviour:
+     * the exit animation slides left, then snaps back to the
+     * base "right" position without animating.
+     */
+
+    workCount.addEventListener(
+        "transitionend",
+        function (event) {
+
+            if (
+                event.propertyName !== "transform"
+            ) {
+                return;
+            }
+
+            if (
+                workCount.classList.contains(
+                    "is-hidden-left"
+                ) &&
+
+                !workCount.classList.contains(
+                    "is-visible"
+                )
+            ) {
+
+                workCount.style.transition =
+                    "none";
+
+                workCount.classList.remove(
+                    "is-hidden-left"
+                );
+
+                void workCount.offsetWidth;
+
+                workCount.style.transition =
+                    "";
+
+            }
+
+        }
+    );
+
+
+    /*
+     * Count how many projects contain ALL of the given
+     * fields — mirrors the matching logic used by the
+     * projects panel filters (see script.js:
+     * projectMatchesFilters).
+     */
+
+    function countMatchingProjects(
+        fields
+    ) {
+
+        if (
+            typeof PROJECTS === "undefined" ||
+            !Array.isArray(PROJECTS)
+        ) {
+
+            return 0;
+
+        }
+
+        return PROJECTS.filter(
+            function (project) {
+
+                return fields.every(
+                    function (field) {
+
+                        return (
+                            project.fields || []
+                        ).includes(
+                            field
+                        );
+
+                    }
+                );
+
+            }
+        ).length;
+
+    }
+
+
+    function showWorkCount(
+        node
+    ) {
+
+        if (
+            !isWorkNode(node) ||
+            !node.fields ||
+            !node.fields.length
+        ) {
+
+            return;
+
+        }
+
+        var count =
+            countMatchingProjects(
+                node.fields
+            );
+
+        workCount.textContent =
+            count +
+            (
+                count === 1 ?
+                    " work" :
+                    " works"
+            );
+
+        workCount.classList.remove(
+            "is-hidden-left"
+        );
+
+        workCount.classList.add(
+            "is-visible"
+        );
+
+    }
+
+
+    function hideWorkCount() {
+
+        workCount.classList.remove(
+            "is-visible"
+        );
+
+        workCount.classList.add(
+            "is-hidden-left"
+        );
+
+    }
+
+
+    /* =========================================================
        HELPERS
        ========================================================= */
 
@@ -444,12 +744,35 @@
 
     edges.forEach(function (edge) {
 
+        var sourceNode =
+            nodeMap[edge.source];
+
+        var targetNode =
+            nodeMap[edge.target];
+
+        /*
+         * An edge is a "field" edge (dashed) when it runs
+         * between two interest nodes (exploring/emerging).
+         *
+         * An edge that touches an intersecting-work node
+         * stays solid.
+         */
+
+        var isFieldEdge =
+            !isWorkNode(sourceNode) &&
+            !isWorkNode(targetNode);
+
         var line =
             createElement(
                 "line",
                 {
                     class:
-                        "research-edge"
+                        "research-edge" +
+                        (
+                            isFieldEdge ?
+                                " is-field-edge" :
+                                ""
+                        )
                 }
             );
 
@@ -1640,6 +1963,16 @@
             item
         );
 
+
+        showFieldIndicator(
+            item.data
+        );
+
+
+        showWorkCount(
+            item.data
+        );
+
     }
 
 
@@ -1674,6 +2007,10 @@
 
 
     clearObscured();
+
+    hideFieldIndicator();
+
+    hideWorkCount();
 
 }
 

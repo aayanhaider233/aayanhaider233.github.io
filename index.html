@@ -28,16 +28,17 @@
                 Profile
             </button>
 
+            
             <button
                 type="button"
                 role="tab"
-                id="tab-projects"
-                aria-controls="panel-projects"
+                id="tab-education"
+                aria-controls="panel-education"
                 aria-selected="false"
                 tabindex="-1"
                 class="tab"
             >
-                Projects
+                Education
             </button>
 
             <a
@@ -51,27 +52,26 @@
             <button
                 type="button"
                 role="tab"
-                id="tab-education"
-                aria-controls="panel-education"
+                id="tab-landscape"
+                aria-controls="panel-landscape"
                 aria-selected="false"
                 tabindex="-1"
                 class="tab"
             >
-                Education
+                Landscape
             </button>
 
             <button
                 type="button"
                 role="tab"
-                id="tab-contact"
-                aria-controls="panel-contact"
+                id="tab-projects"
+                aria-controls="panel-projects"
                 aria-selected="false"
                 tabindex="-1"
                 class="tab"
             >
-                Contact
+                Projects
             </button>
-
         </nav>
 
     </div>
@@ -97,45 +97,43 @@
         </div>
     </section>
 
-    <section class="landscape-section" aria-labelledby="landscape-title">
+    <section class="about-section" aria-labelledby="about-title">
 
         <div class="section-intro">
 
             <p class="eyebrow">
-                Research Landscape
+                About
             </p>
 
-            <h2 id="landscape-title">
-                Intersecting interests and efforts
+            <h2 id="about-title">
+                A short introduction
             </h2>
 
         </div>
 
+        <div class="about-content">
 
-        <div
-            id="research-landscape"
-            class="research-landscape"
-            aria-label="Interactive research landscape"
-        ></div>
+            <p>
+                My research interests sit at the intersections of several fields 
+                rather than within a single discipline. I enjoy following questions 
+                across disciplinary boundaries - learning the tools of a field, 
+                connecting them with ideas from another, and developing those intersections 
+                into research problems and projects.
+            </p>
 
+            <p>
+                I have worked primarily with machine learning, causal inference, and bioinformatics, 
+                and am currently exploring broader directions including NLP, speech processing, 
+                reinforcement learning, continual learning, and procedural generation.
+            </p>
+            
+            <p>
+                I learn through making connections between <em>ideas</em>, 
+                <em>disciplines</em>, and <strong><em>people</em></strong>. 
+                I teach to learn, and so I learn by connecting.    
+            </p>
 
-        <div class="research-landscape-legend">
-
-            <span>
-                <i class="legend-symbol exploring"></i>
-                Exploring interests
-            </span>
-
-            <span>
-                <i class="legend-symbol emerging"></i>
-                Emerging interest
-            </span>
-
-            <span>
-                <i class="legend-symbol work"></i>
-                Intersecting works
-            </span>
-
+            
         </div>
 
     </section>
@@ -154,11 +152,11 @@
             <article class="selected-card"><span class="work-label">2026</span><h3>Hierarchical Recursive Causal Feature Selection</h3><p>For Explainable Schizophrenia Prediction from DNA Methylation</p><div class="tag-list"><span>ML</span><span>Causal ML</span><span>Bioinformatics</span><span>Explainable AI</span></div></article>
         </div>
     </section>
-
+<!-- 
     <section class="academic-snapshot">
         <div><p class="eyebrow">Academic Background</p><h2>Computer Science & Mathematics</h2></div>
         <div><p><strong>B.Sc. in Computer Science</strong><br>Double Major in Mathematics · BRAC University · 2022–2026</p><a href="#education" class="section-link" data-tab="tab-education">View education →</a></div>
-    </section>
+    </section> -->
 </div>
 </section>
 <section
@@ -220,7 +218,63 @@
     </div>
 
 </section>
+<section
+    id="panel-landscape"
+    role="tabpanel"
+    aria-labelledby="tab-landscape"
+    class="tabpanel"
+    tabindex="0"
+    hidden
+>
 
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+
+                <p class="eyebrow">
+                    Research Landscape
+                </p>
+
+                <h2>
+                    Intersecting interests and efforts
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="research-landscape"
+            class="research-landscape"
+            aria-label="Interactive research landscape"
+        ></div>
+
+
+        <div class="research-landscape-legend">
+
+            <span>
+                <i class="legend-symbol exploring"></i>
+                Exploring interests
+            </span>
+
+            <span>
+                <i class="legend-symbol emerging"></i>
+                Emerging interest
+            </span>
+
+            <span>
+                <i class="legend-symbol work"></i>
+                Intersecting works
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
 <section id="panel-education" role="tabpanel" aria-labelledby="tab-education" class="tabpanel" tabindex="0" hidden>
 <div class="container"><div class="section-heading"><div><p class="eyebrow">Education</p><h2>Academic Timeline</h2></div></div><div class="timeline">
 <article class="timeline-item"><div class="timeline-date">2022 — 2026</div><div class="timeline-content"><h3>B.Sc. in Computer Science</h3><p class="institution">BRAC University<p>Dhaka, Bangladesh</p><p><strong>Majors:</strong> Computer Science and Mathematics.</p><p> <strong>CGPA:</strong> 3.91 / 4.00.</p><p><strong>Undergraduate thesis title:</strong> <em>From DMRs to Disease Diagnosis: A Causal and Inferential Framework for Schizophrenia Using DNA Methylation</em></p><p><strong>Relevant coursework:</strong> Algorithms, Data Structures, Artificial Intelligence, Numerical Methods, Computer Graphics, Database Systems, Statistics & Probability, Linear Algebra, Real Analysis, Graph Theory, Dynamical Systems, Numerical Analysis</p></div></article>
@@ -229,12 +283,12 @@
 </div></div>
 </section>
 
-<section id="panel-contact" role="tabpanel" aria-labelledby="tab-contact" class="tabpanel tabpanel-contact" tabindex="0" hidden>
-<div class="container"><div class="section-heading"><div><p class="eyebrow">Contact</p><h2>Let's talk research.</h2></div></div><div class="contact-content"><p>For research collaborations, academic opportunities, or questions about my work, feel free to get in touch.</p><a href="mailto:aayanhaider112358@gmail.com" class="contact-email">aayanhaider112358@gmail.com</a><div class="contact-links"><a href="https://github.com/aayanhaider233" target="_blank" rel="noopener">GitHub</a><a href="https://www.linkedin.com/in/aayan-haider-6667a52a3/" target="_blank" rel="noopener">LinkedIn</a><a href="https://orcid.org/0009-0000-1401-4452" target="_blank" rel="noopener">ORCID</a></div></div></div>
-</section>
 </div>
 </main>
 <footer class="site-footer"><div class="container footer-container"><p>Aayan Haider 2026</p><p>Built with HTML, CSS, & JavaScript · GitHub Pages</p></div></footer>
+<script src="https://cdn.jsdelivr.net/npm/marked/lib/marked.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+
 <script src="assets/research-landscape/research-landscape-data.js"></script>
 <script src="assets/research-landscape/research-landscape-force.js"></script>
 <script src="assets/research-landscape/research-landscape-engine.js"></script>
