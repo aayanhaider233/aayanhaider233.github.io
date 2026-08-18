@@ -35,7 +35,6 @@ The simulation was built from scratch using immediate-mode OpenGL, with the ecos
 ## How It Works
 
 ### Flocking
-
 Each fish continuously calculates steering forces based on its surroundings:
 
 - **Alignment**: match the heading of nearby fish
@@ -48,21 +47,17 @@ Each fish continuously calculates steering forces based on its surroundings:
 The combination of these local rules produces collective flocking behavior without explicitly defining the movement of the group as a whole.
 
 ### Predators
-
 Predators use a similar steering framework, but pursue nearby fish rather than food. Successful predation resets their hunger state and changes the population dynamics of the ecosystem.
 
 ### Hunger and Survival
-
 Fish and predators continuously accumulate hunger. If an entity fails to feed within its survival window, it dies and sinks toward the tank floor before being removed from the simulation.
 
 ### Gather Mode
-
 Gather mode introduces an additional organizational behavior. A leader is dynamically selected from the flock, while other fish are assigned target distances around it.
 
 The resulting interaction between the leader-following behavior and the existing flocking rules produces a more organized shoal while retaining individual movement.
 
 ### Interactive Events
-
 The environment can be modified during simulation:
 
 - **Food drops** attract nearby fish.
@@ -76,20 +71,20 @@ The simulation combines several interacting systems:
 
 ```text
 Individual steering rules
-          │
-          ▼
-     Fish behavior
-          │
-          ▼
-   Flocking dynamics
-          │
-          ▼
- Predator-prey interactions
-          │
-          ▼
-   Hunger / survival
-          │
-          ▼
+ │
+ ▼
+Fish behavior
+ │
+ ▼
+Flocking dynamics
+ │
+ ▼
+Predator-prey interactions
+ │
+ ▼
+Hunger / survival
+ │
+ ▼
 Emergent ecosystem behavior
 ```
 

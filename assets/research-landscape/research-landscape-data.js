@@ -2,9 +2,6 @@ const RESEARCH_LANDSCAPE = {
 
     nodes: [
 
-        /* ----------------------------------------------------
-           CURRENTLY EXPLORING
-           ---------------------------------------------------- */
         {
             id: "computer-graphics",
             name: "Computer Graphics",
@@ -61,9 +58,7 @@ const RESEARCH_LANDSCAPE = {
             y: 75
         },
 
-        /* ----------------------------------------------------
-           EMERGING INTERESTS
-           ---------------------------------------------------- */
+
 
         {
             id: "nlp",
@@ -106,9 +101,7 @@ const RESEARCH_LANDSCAPE = {
         },
 
 
-        /* ----------------------------------------------------
-           INTERSECTING WORK
-           ---------------------------------------------------- */
+
 
         {
             id: "causal-ml-bioinformatics-ml-xai",
@@ -139,13 +132,11 @@ const RESEARCH_LANDSCAPE = {
     ],
 
 
-    /* --------------------------------------------------------
-       EDGES
-       -------------------------------------------------------- */
+
 
     edges: [
 
-        /* Causal Inference + ML → Causal ML */
+
 
         {
             source: "causal-inference",
@@ -157,36 +148,36 @@ const RESEARCH_LANDSCAPE = {
             target: "causal-ml"
         },
 
-        /* Computer Graphics → Proc Gen */
+
 
         {
             source: "computer-graphics",
             target: "procedural-generation"
         },
 
-        /* Causal ML + ML + Bioinformatics + XAI */
-        
+
+
         {
             source: "causal-ml",
             target: "causal-ml-bioinformatics-ml-xai"
         },
-        
+
         {
             source: "machine-learning",
             target: "causal-ml-bioinformatics-ml-xai"
         },
-        
+
         {
             source: "bioinformatics",
             target: "causal-ml-bioinformatics-ml-xai"
         },
-        
+
         {
             source: "xai",
             target: "causal-ml-bioinformatics-ml-xai"
         },
 
-        /* CG + Animation */
+
 
         {
             source: "animation",
