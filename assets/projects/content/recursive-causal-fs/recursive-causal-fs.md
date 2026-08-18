@@ -6,20 +6,20 @@ The central idea is to move through several biological levels:
 
 ```text
 DNA methylation
-      │
-      ▼
-    DMRs
-      │
-      ▼
-    Genes
-      │
-      ▼
-   Modules
-      │
-      ▼
+ │
+ ▼
+DMRs
+ │
+ ▼
+Genes
+ │
+ ▼
+Modules
+ │
+ ▼
 Causal relationships
-      │
-      ▼
+ │
+ ▼
 Compact feature set
 ```
 
